@@ -1,218 +1,158 @@
 package com.example.compose_ta09
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.example.compose_ta09.ui.theme.COMPOSE_TA09Theme
 
 @Composable
 fun RegisterScreen(navController: NavController) {
+    val context = LocalContext.current
     var fullName by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var publicKey by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var showError by remember { mutableStateOf(false) }
+    var fullNameError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(id = R.color.soft_green))
-            .padding(horizontal = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .background(Color(0xFFEFF5EE)), // Warna background utama
+        contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = "REGISTER",
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Bold,
-            color = colorResource(id = R.color.dark_green),
-            modifier = Modifier.padding(bottom = 24.dp)
-        )
-
         Card(
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF98CDA0)), // Warna hijau muda
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.green)),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                .padding(16.dp)
+                .fillMaxWidth(0.85f)
         ) {
             Column(
                 modifier = Modifier.padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Judul
+                Text(
+                    "REGISTER",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF1B5E20)
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    "Daftar Akun Anda!",
+                    fontSize = 14.sp,
+                    color = Color.Black
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 // Input Nama Lengkap
-                TextField(
+                OutlinedTextField(
                     value = fullName,
-                    onValueChange = { fullName = it },
-                    label = { Text("Nama Lengkap", color = Color.Black) },
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White,
-                        cursorColor = Color.Black,
-                        focusedLabelColor = Color.Black,
-                        unfocusedLabelColor = Color.Black
-                    ),
-                    textStyle = TextStyle(color = Color.Black),
+                    onValueChange = {
+                        fullName = it
+                        fullNameError = null
+                    },
+                    label = { Text("Nama Lengkap") },
+                    placeholder = { Text("Masukkan Nama Lengkap") },
+                    textStyle = TextStyle(fontSize = 16.sp),
+                    singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    isError = showError && fullName.isEmpty()
-                )
-                if (showError && fullName.isEmpty()) {
-                    Text(
-                        text = "Nama lengkap harus diisi!",
-                        color = Color.Red,
-                        fontSize = 14.sp,
-                        modifier = Modifier.padding(top = 4.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    isError = fullNameError != null,
+                    colors = TextFieldDefaults.colors(
+                        unfocusedContainerColor = Color.White,
+                        focusedContainerColor = Color.White,
+                        disabledContainerColor = Color.White,
+                        errorContainerColor = Color.White
                     )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Input Email
-                TextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    label = { Text("Email", color = Color.Black) },
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White,
-                        cursorColor = Color.Black,
-                        focusedLabelColor = Color.Black,
-                        unfocusedLabelColor = Color.Black
-                    ),
-                    textStyle = TextStyle(color = Color.Black),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                    modifier = Modifier.fillMaxWidth(),
-                    isError = showError && email.isEmpty()
                 )
-                if (showError && email.isEmpty()) {
+                if (fullNameError != null) {
                     Text(
-                        text = "Email harus diisi!",
+                        fullNameError!!,
                         color = Color.Red,
-                        fontSize = 14.sp,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Input Public Key
-                TextField(
-                    value = publicKey,
-                    onValueChange = { publicKey = it },
-                    label = { Text("Public Key", color = Color.Black) },
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White,
-                        cursorColor = Color.Black,
-                        focusedLabelColor = Color.Black,
-                        unfocusedLabelColor = Color.Black
-                    ),
-                    textStyle = TextStyle(color = Color.Black),
-                    modifier = Modifier.fillMaxWidth(),
-                    isError = showError && publicKey.isEmpty()
-                )
-                if (showError && publicKey.isEmpty()) {
-                    Text(
-                        text = "Public Key harus diisi!",
-                        color = Color.Red,
-                        fontSize = 14.sp,
-                        modifier = Modifier.padding(top = 4.dp)
+                        fontSize = 12.sp,
+                        modifier = Modifier.align(Alignment.Start)
                     )
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 // Input Kata Sandi
-                TextField(
+                OutlinedTextField(
                     value = password,
-                    onValueChange = { password = it },
-                    label = { Text("Kata Sandi", color = Color.Black) },
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White,
-                        cursorColor = Color.Black,
-                        focusedLabelColor = Color.Black,
-                        unfocusedLabelColor = Color.Black
-                    ),
-                    textStyle = TextStyle(color = Color.Black),
+                    onValueChange = {
+                        password = it
+                        passwordError = null
+                    },
+                    label = { Text("Kata Sandi") },
+                    placeholder = { Text("Masukkan Kata Sandi") },
                     visualTransformation = PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Password),
+                    textStyle = TextStyle(fontSize = 16.sp),
+                    singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    isError = showError && password.isEmpty()
+                    shape = RoundedCornerShape(8.dp),
+                    isError = passwordError != null,
+                    colors = TextFieldDefaults.colors(
+                        unfocusedContainerColor = Color.White,
+                        focusedContainerColor = Color.White,
+                        disabledContainerColor = Color.White,
+                        errorContainerColor = Color.White
+                    )
                 )
-                if (showError && password.isEmpty()) {
+                if (passwordError != null) {
                     Text(
-                        text = "Kata sandi harus diisi!",
+                        passwordError!!,
                         color = Color.Red,
-                        fontSize = 14.sp,
-                        modifier = Modifier.padding(top = 4.dp)
+                        fontSize = 12.sp,
+                        modifier = Modifier.align(Alignment.Start)
                     )
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Tombol Daftar
                 Button(
                     onClick = {
-                        if (fullName.isNotEmpty() && email.isNotEmpty() && publicKey.isNotEmpty() && password.isNotEmpty()) {
-                            // Handle register logic
+                        // Validasi input
+                        fullNameError = if (fullName.isBlank()) "Nama Lengkap tidak boleh kosong!" else null
+                        passwordError = if (password.isBlank()) "Kata Sandi tidak boleh kosong!" else null
 
-                            // Navigasi ke login setelah berhasil daftar
-                            navController.navigate("login") {
-                                popUpTo("register") { inclusive = true }
-                            }
-                        } else {
-                            showError = true
+                        if (fullNameError == null && passwordError == null) {
+                            Toast.makeText(context, "Registrasi Berhasil!", Toast.LENGTH_SHORT).show()
+                            navController.navigate("login") // Redirect ke halaman login
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.dark_green)),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp)
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1B5E20)),
+                    shape = RoundedCornerShape(50),
+                    modifier = Modifier.fillMaxWidth(0.8f)
                 ) {
-                    Text(text = "Daftar", color = Color.White, fontSize = 16.sp)
+                    Text("Daftar", fontSize = 14.sp, color = Color.White)
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Link Login
+                TextButton(onClick = { navController.navigate("login") }) {
+                    Text(
+                        "Sudah memiliki akun? Masuk sekarang!",
+                        fontSize = 14.sp,
+                        color = Color(0xFF1B5E20)
+                    )
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Teks Navigasi ke Login
-        TextButton(onClick = { navController.navigate("login") }) {
-            Text(
-                text = "Sudah memiliki Akun? Masuk sekarang!",
-                color = colorResource(id = R.color.purple_500),
-                fontSize = 14.sp
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun RegisterScreenPreview() {
-    COMPOSE_TA09Theme {
-        RegisterScreen(rememberNavController())
     }
 }

@@ -27,21 +27,22 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             COMPOSE_TA09Theme {
-                MainScreen()
+                MyApp()
             }
         }
     }
 }
 
 @Composable
-fun MainScreen() {
+fun MyApp() {
     val navController = rememberNavController()
     var isLoggedIn by remember { mutableStateOf(false) }
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = currentBackStackEntry?.destination?.route
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        bottomBar = { BottomNavigationBar(navController, isLoggedIn) }
-    ) { innerPadding ->
+    val showBottomBar = currentRoute in listOf("home", "addData", "profile")
+
+    Scaffold { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             NavigationGraph(navController, isLoggedIn) { isLoggedIn = true }
         }
@@ -93,15 +94,16 @@ fun NavigationGraph(
     isLoggedIn: Boolean,
     onLoginSuccess: () -> Unit
 ) {
-    NavHost(navController, startDestination = "home") {
-        composable("home") { HomeScreen(navController) } // ✅ HomeScreen menerima NavController
+    NavHost(navController, startDestination = "connectMeta") {
+        composable("connectMeta") { ConnectMetaScreen(navController) }
+        composable("home") { HomeScreen(navController) }
         composable("addData") { TambahScreen(navController) }
         composable("profile") { ProfileScreen() }
-        composable("login") { LoginScreen(navController, onLoginSuccess) }
+        composable("login") { LoginScreen(navController) }
         composable("register") { RegisterScreen(navController) }
         composable("detail/{plant}") { backStackEntry ->
             val plant = backStackEntry.arguments?.getString("plant") ?: ""
-            DetailScreen(plant, onBack = {navController.popBackStack()}) // Pastikan DetailScreen menerima navController dan parameter plant
+            DetailScreen(plant, onBack = {navController.popBackStack()})
         }
     }
 }
@@ -123,6 +125,22 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
 @Composable
 fun MainScreenPreview() {
     COMPOSE_TA09Theme {
-        MainScreen()
+        MyApp()
     }
 }
+
+
+@Composable
+fun ProfileScreen(navController: NavHostController) {
+    LaunchedEffect(Unit) {
+        navController.navigate("connectMeta") {
+            popUpTo("main") { inclusive = true }
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        CircularProgressIndicator()
+    }
+}
+
+data class BottomNavItem(val route: String, val label: String, val icon: androidx.compose.ui.graphics.vector.ImageVector)
