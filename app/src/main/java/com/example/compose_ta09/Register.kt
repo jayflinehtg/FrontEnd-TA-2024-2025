@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -45,15 +46,15 @@ fun RegisterScreen(navController: NavController) {
                 // Judul
                 Text(
                     "REGISTER",
-                    fontSize = 22.sp,
+                    fontSize = 30.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1B5E20)
+                    color = colorResource(id = R.color.dark_green),
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     "Daftar Akun Anda!",
                     fontSize = 14.sp,
-                    color = Color.Black
+                    color = colorResource(id = R.color.black)
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -149,7 +150,7 @@ fun RegisterScreen(navController: NavController) {
                     Text(
                         "Sudah memiliki akun? Masuk sekarang!",
                         fontSize = 14.sp,
-                        color = Color(0xFF4E4E4E)
+                        color = colorResource(id = R.color.purple_500),
                     )
                 }
             }

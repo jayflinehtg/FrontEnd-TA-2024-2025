@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -39,9 +40,9 @@ fun LoginScreen(navController: NavController) {
             ) {
                 Text(
                     text = "LOGIN",
-                    fontSize = 24.sp,
+                    fontSize = 30.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF2E7D32) // Warna hijau gelap
+                    color = colorResource(id = R.color.dark_green)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -78,7 +79,7 @@ fun LoginScreen(navController: NavController) {
                     )
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(30.dp))
 
                 // Tombol Masuk
                 Button(
@@ -96,14 +97,12 @@ fun LoginScreen(navController: NavController) {
                     Text("Masuk", fontSize = 14.sp, color = Color.White)
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
-
                 // Link ke Halaman Register
                 TextButton(onClick = { navController.navigate("register") }) {
                     Text(
                         "Belum memiliki akun? Daftar disini",
                         fontSize = 14.sp,
-                        color = Color(0xFF4E4E4E)
+                        color = colorResource(id = R.color.purple_500)
                     )
                 }
             }

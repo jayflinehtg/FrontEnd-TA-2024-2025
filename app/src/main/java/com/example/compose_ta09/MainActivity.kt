@@ -13,6 +13,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
@@ -82,15 +84,20 @@ fun BottomNavigationBar(navController: NavHostController) {
         BottomNavItem("profile", "Profile", Icons.Filled.Person)
     )
 
-    NavigationBar(modifier = Modifier.fillMaxWidth()) {
+    val darkGreenColor = colorResource(id = R.color.dark_green) // Ambil warna dari resource
+
+    NavigationBar(
+        modifier = Modifier.fillMaxWidth(),
+        containerColor = Color.White
+    ) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = navBackStackEntry?.destination
 
         items.forEach { item ->
             NavigationBarItem(
                 modifier = Modifier.weight(1f),
-                icon = { Icon(item.icon, contentDescription = item.label) },
-                label = { Text(item.label) },
+                icon = { Icon(item.icon, contentDescription = item.label, tint = darkGreenColor) },
+                label = { Text(item.label, color = darkGreenColor) },
                 selected = currentDestination?.hierarchy?.any { it.route == item.route } == true,
                 onClick = {
                     if (currentDestination?.route != item.route) {
