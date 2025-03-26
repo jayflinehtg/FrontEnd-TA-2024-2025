@@ -28,7 +28,7 @@ import androidx.navigation.NavController
 import com.example.compose_ta09.ui.theme.COMPOSE_TA09Theme
 
 @Composable
-fun TambahScreen(navController: NavController) {
+fun TambahScreenContent(navController: NavController) { // Renamed to avoid confusion
     var namaTanaman by remember { mutableStateOf("") }
     var namaLatin by remember { mutableStateOf("") }
     var komposisi by remember { mutableStateOf("") }

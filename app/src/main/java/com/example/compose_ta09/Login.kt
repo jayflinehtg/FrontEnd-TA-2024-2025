@@ -18,7 +18,7 @@ import androidx.navigation.NavController
 @Composable
 fun LoginScreen(navController: NavController) {
     var password by remember { mutableStateOf("") }
-    var passwordError by remember { mutableStateOf<String?>(null) } // State untuk pesan error
+    var passwordError by remember { mutableStateOf<String?>(null) }
 
     Box(
         modifier = Modifier
@@ -26,73 +26,86 @@ fun LoginScreen(navController: NavController) {
             .background(Color(0xFFE8F5E9)), // Warna background hijau muda
         contentAlignment = Alignment.Center
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
+        Card(
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF98CDA0)), // Warna hijau dengan sudut melengkung
             modifier = Modifier
-                .width(320.dp)
-                .height(375.dp)
-                .background(Color(0xFF98CDA0), shape = RoundedCornerShape(16.dp)) // Warna hijau dengan sudut melengkung
-                .padding(20.dp)
+                .padding(16.dp)
+                .fillMaxWidth(0.85f)
         ) {
-            Text(
-                text = "LOGIN",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF2E7D32) // Warna hijau gelap
-            )
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Input Kata Sandi
-            OutlinedTextField(
-                value = password,
-                onValueChange = {
-                    password = it
-                    passwordError = null // Hapus error ketika pengguna mulai mengetik
-                },
-                label = { Text("Kata Sandi") },
-                visualTransformation = PasswordVisualTransformation(),
-                textStyle = TextStyle(fontSize = 16.sp),
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                isError = passwordError != null // Tampilkan error jika ada
-            )
-
-            // Tampilkan pesan error jika ada
-            if (passwordError != null) {
-                Text(
-                    text = passwordError!!,
-                    color = Color.Red,
-                    fontSize = 12.sp,
-                    modifier = Modifier.align(Alignment.Start)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Tombol Masuk
-            Button(
-                onClick = {
-                    if (password.isEmpty()) {
-                        passwordError = "Kata sandi tidak boleh kosong"
-                    } else {
-                        navController.navigate("main") // Pindah ke halaman utama
-                    }
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)), // Warna hijau gelap
-                shape = RoundedCornerShape(50),
-                modifier = Modifier.fillMaxWidth(0.8f)
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Masuk", fontSize = 14.sp, color = Color.White)
-            }
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Teks "Belum memiliki akun? Daftar disini"
-            TextButton(onClick = { navController.navigate("register") }) {
                 Text(
-                    "Belum memiliki Akun? Daftar disini",
-                    fontSize = 14.sp,
-                    color = Color(0xFF4E4E4E)
+                    text = "LOGIN",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF2E7D32) // Warna hijau gelap
                 )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Input Kata Sandi
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = {
+                        password = it
+                        passwordError = null // Hapus error saat mengetik
+                    },
+                    label = { Text("Kata Sandi") },
+                    placeholder = { Text("Masukkan Kata Sandi") },
+                    visualTransformation = PasswordVisualTransformation(),
+                    textStyle = TextStyle(fontSize = 16.sp),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    isError = passwordError != null,
+                    colors = TextFieldDefaults.colors(
+                        unfocusedContainerColor = Color.White,
+                        focusedContainerColor = Color.White,
+                        disabledContainerColor = Color.White,
+                        errorContainerColor = Color.White
+                    )
+                )
+
+                // Tampilkan pesan error jika ada
+                if (passwordError != null) {
+                    Text(
+                        text = passwordError!!,
+                        color = Color.Red,
+                        fontSize = 12.sp,
+                        modifier = Modifier.align(Alignment.Start)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Tombol Masuk
+                Button(
+                    onClick = {
+                        if (password.isEmpty()) {
+                            passwordError = "Kata sandi tidak boleh kosong"
+                        } else {
+                            navController.navigate("main") // Pindah ke halaman utama
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)), // Warna hijau gelap
+                    shape = RoundedCornerShape(50),
+                    modifier = Modifier.fillMaxWidth(0.8f)
+                ) {
+                    Text("Masuk", fontSize = 14.sp, color = Color.White)
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Link ke Halaman Register
+                TextButton(onClick = { navController.navigate("register") }) {
+                    Text(
+                        "Belum memiliki akun? Daftar disini",
+                        fontSize = 14.sp,
+                        color = Color(0xFF4E4E4E)
+                    )
+                }
             }
         }
     }

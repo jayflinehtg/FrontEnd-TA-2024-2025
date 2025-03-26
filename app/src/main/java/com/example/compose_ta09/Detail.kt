@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -33,7 +32,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.layout.systemBarsPadding
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -45,7 +43,7 @@ class DetailActivity : ComponentActivity() {
         val plantName = intent.getStringExtra("plantName") ?: "Tanaman"
 
         setContent {
-            DetailScreen(plantName, onBack = { finish()})
+            DetailScreen(plantName, onBack = { finish() })
         }
     }
 }
@@ -60,7 +58,7 @@ fun DetailScreen(plantName: String, onBack: () -> Unit) {
     val context = LocalContext.current
     val backgroundColor = colorResource(id = R.color.soft_green)
     val cardBackgroundColor = Color.White
-    val currentTime = SimpleDateFormat("HH:mm dd MMM yyyy", Locale.getDefault()).format(Date())
+    val currentTime = SimpleDateFormat("HH:mm dd MMM yyyy", Locale.getDefault()).format(Date()) // Added year
 
     // Menyimpan daftar rating pengguna
     var userRatings by remember { mutableStateOf(mutableListOf(userRating)) }
@@ -95,121 +93,122 @@ fun DetailScreen(plantName: String, onBack: () -> Unit) {
                 }
             )
         }
-    ) { paddingValues ->
-            Column(
+    ) { innerPadding -> // Use innerPadding provided by Scaffold
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(backgroundColor)
+                .verticalScroll(rememberScrollState())
+                .padding(innerPadding) // Apply innerPadding here
+                .padding(horizontal = 16.dp, vertical = 16.dp) // Your content padding
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Image(
+                    painter = painterResource(R.drawable.baseline_person_24),
+                    contentDescription = "Profile Picture",
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Nama Pengguna 1", fontWeight = FontWeight.Bold)
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("Nama Tanaman:", fontWeight = FontWeight.Bold)
+            Text(plantName)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text("Kandungan Tanaman:", fontWeight = FontWeight.Bold)
+            Text("Kandungan Tanaman Kandungan Tanaman")
+            Spacer(modifier = Modifier.height(4.dp))
+            Text("Manfaat Tanaman:", fontWeight = FontWeight.Bold)
+            Text("Manfaat Tanaman, Manfaat Tanaman")
+            Spacer(modifier = Modifier.height(4.dp))
+            Text("Cara Pengolahan:", fontWeight = FontWeight.Bold)
+            Text("1. Cara pengolahan 1\n2. Cara pengolahan 2")
+
+            Spacer(modifier = Modifier.height(16.dp))
+            Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(backgroundColor)
-                    .padding(paddingValues)
-                    .systemBarsPadding()
-                    .padding(16.dp)
-                    .verticalScroll(rememberScrollState())
+                    .fillMaxWidth()
+                    .height(150.dp)
+                    .clip(RoundedCornerShape(8.dp))
             ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Image(
-                            painter = painterResource(R.drawable.baseline_person_24),
-                            contentDescription = "Profile Picture",
-                            modifier = Modifier.size(40.dp).clip(CircleShape)
+                Image(
+                    painter = painterResource(R.drawable.jahe),
+                    contentDescription = "Plant Image",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(8.dp)),
+                    contentScale = ContentScale.Crop
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text("Beri Rating:", fontWeight = FontWeight.Bold)
+            Row {
+                for (i in 1..5) {
+                    IconButton(onClick = {
+                        userRating = i
+                        userRatings.add(i)
+                    }) {
+                        Icon(
+                            painterResource(if (i <= userRating) R.drawable.baseline_star_24 else R.drawable.baseline_star_border_24),
+                            contentDescription = "Star Rating",
+                            tint = Color(0xFFFFD700),
+                            modifier = Modifier.size(34.dp)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Nama Pengguna 1", fontWeight = FontWeight.Bold)
                     }
+                }
+            }
 
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text("Nama Tanaman:", fontWeight = FontWeight.Bold)
-                        Text(plantName)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text("Kandungan Tanaman:", fontWeight = FontWeight.Bold)
-                        Text("Kandungan Tanaman Kandungan Tanaman")
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text("Manfaat Tanaman:", fontWeight = FontWeight.Bold)
-                        Text("Manfaat Tanaman, Manfaat Tanaman")
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text("Cara Pengolahan:", fontWeight = FontWeight.Bold)
-                        Text("1. Cara pengolahan 1\n2. Cara pengolahan 2")
+            Spacer(modifier = Modifier.height(8.dp))
+            // Menghitung total rating
+            val totalRating = userRatings.sum()
+            Text("Total Rating: $totalRating/${userRatings.size * 5}", fontWeight = FontWeight.Bold)
 
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(150.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                        ) {
-                            Image(
-                                painter = painterResource(R.drawable.jahe),
-                                contentDescription = "Plant Image",
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .clip(RoundedCornerShape(8.dp)),
-                                contentScale = ContentScale.Crop
-                            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("Review Pengguna Lainnya:", fontWeight = FontWeight.Bold)
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(2.dp)
+            ) {
+                Column(modifier = Modifier.padding(8.dp)) {
+                    Text("Nama Pengguna 2", fontWeight = FontWeight.Bold)
+                    Text(comments.first())
+                    Text(currentTime, fontSize = 12.sp, color = Color.Gray)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    value = comment,
+                    onValueChange = { comment = it },
+                    placeholder = { Text("Tambahkan Komentar Anda...") },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = {
+                        if (comment.isNotBlank()) {
+                            comments = comments + comment
+                            comment = ""
                         }
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Text("Beri Rating:", fontWeight = FontWeight.Bold)
-                        Row {
-                            for (i in 1..5) {
-                                IconButton(onClick = {
-                                    userRating = i
-                                    userRatings.add(i)
-                                }) {
-                                    Icon(
-                                        painterResource(if (i <= userRating) R.drawable.baseline_star_24 else R.drawable.baseline_star_border_24),
-                                        contentDescription = "Star Rating",
-                                        tint = Color(0xFFFFD700),
-                                        modifier = Modifier.size(34.dp)
-                                    )
-                                }
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(8.dp))
-                        // Menghitung total rating
-                        val totalRating = userRatings.sum()
-                        Text("Total Rating: $totalRating/${userRatings.size * 5}", fontWeight = FontWeight.Bold)
-
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text("Review Pengguna Lainnya:", fontWeight = FontWeight.Bold)
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
-                            elevation = CardDefaults.cardElevation(2.dp)
-                        ) {
-                            Column(modifier = Modifier.padding(8.dp)) {
-                                Text("Nama Pengguna 2", fontWeight = FontWeight.Bold)
-                                Text(comments.first())
-                                Text(currentTime, fontSize = 12.sp, color = Color.Gray)
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            OutlinedTextField(
-                                value = comment,
-                                onValueChange = { comment = it },
-                                placeholder = { Text("Tambahkan Komentar Anda...") },
-                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                                keyboardActions = KeyboardActions(onDone = {
-                                    if (comment.isNotBlank()) {
-                                        comments = comments + comment
-                                        comment = ""
-                                    }
-                                }),
-                                modifier = Modifier.weight(1f)
-                            )
-                            IconButton(onClick = {
-                                if (comment.isNotBlank()) {
-                                    comments = comments + comment
-                                    comment = ""
-                                }
-                            }) {
-                                Icon(Icons.Filled.Send, contentDescription = "Send Comment")
-                            }
-                        }
+                    }),
+                    modifier = Modifier.weight(1f)
+                )
+                IconButton(onClick = {
+                    if (comment.isNotBlank()) {
+                        comments = comments + comment
+                        comment = ""
                     }
+                }) {
+                    Icon(Icons.Filled.Send, contentDescription = "Send Comment")
+                }
+            }
+        }
     }
 }

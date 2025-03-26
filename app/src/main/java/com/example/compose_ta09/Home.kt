@@ -27,21 +27,23 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController // Changed import
 import androidx.navigation.compose.rememberNavController
 import com.example.compose_ta09.R
 
-class HomeActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            val navController = rememberNavController()
-            HomeScreen(navController)
-        }
-    }
-}
+// Remove HomeActivity as HomeScreen will be part of the main navigation
+// class HomeActivity : ComponentActivity() {
+//    override fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//        setContent {
+//            val navController = rememberNavController()
+//            HomeScreen(navController)
+//        }
+//    }
+// }
 
 @Composable
-fun HomeScreen(navController: NavController) {
+fun HomeScreen(navController: NavHostController) { // Changed parameter type
     var searchQuery by remember { mutableStateOf("") }
     val herbalPlants = listOf("Jahe", "Kunyit", "Temulawak", "Sambiloto")
     val filteredPlants = herbalPlants.filter { it.contains(searchQuery, ignoreCase = true) }

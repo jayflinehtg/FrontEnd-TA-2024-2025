@@ -13,11 +13,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
+import androidx.navigation.navArgument
 import com.example.app.ui.screens.HomeScreen
 import com.example.compose_ta09.ui.theme.COMPOSE_TA09Theme
 
@@ -36,49 +36,68 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MyApp() {
     val navController = rememberNavController()
-    var isLoggedIn by remember { mutableStateOf(false) }
-    val currentBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = currentBackStackEntry?.destination?.route
 
-    val showBottomBar = currentRoute in listOf("home", "addData", "profile")
-
-    Scaffold { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
-            NavigationGraph(navController, isLoggedIn) { isLoggedIn = true }
-        }
+    NavHost(navController = navController, startDestination = "connectMeta") {
+        composable("connectMeta") { ConnectMetaScreen(navController) }
+        composable("main") { MainScreen(navController) } // BottomNav hanya muncul di MainScreen
+        composable("register") { RegisterScreen(navController) }
+        composable("login") { LoginScreen(navController) }
     }
 }
 
 @Composable
-fun BottomNavigationBar(navController: NavHostController, isLoggedIn: Boolean) {
-    val items = listOf(
-        Screen.Home, Screen.AddData, Screen.Profile
-    )
-    var selectedRoute by remember { mutableStateOf("home") }
+fun MainScreen(navController: NavHostController) {
+    val bottomNavController = rememberNavController()
 
-    NavigationBar(containerColor = Color.White) {
-        items.forEach { screen ->
-            val isSelected = selectedRoute == screen.route
-            NavigationBarItem(
-                icon = {
-                    Icon(
-                        screen.icon,
-                        contentDescription = screen.route,
-                        tint = if (isSelected) Color(0xFF006400) else Color.Gray
-                    )
-                },
-                label = { Text(screen.title) },
-                selected = isSelected,
-                onClick = {
-                    selectedRoute = screen.route
-                    if (screen is Screen.Profile && !isLoggedIn) {
-                        navController.navigate("login") {
-                            popUpTo("home") { inclusive = false }
-                            launchSingleTop = true
-                        }
+    Scaffold(
+        bottomBar = { BottomNavigationBar(bottomNavController) }
+    ) { innerPadding ->
+        Box(modifier = Modifier.padding(innerPadding)) {
+            NavHost(navController = bottomNavController, startDestination = "home") {
+                composable("home") { HomeScreen(bottomNavController) } // Pass bottomNavController
+                composable("tambah") { TambahScreen(bottomNavController) }
+                composable("profile") { ProfileScreen(navController) }
+                composable(
+                    "detail/{plantName}",
+                    arguments = listOf(navArgument("plantName") { defaultValue = "" })
+                ) { backStackEntry ->
+                    val plantName = backStackEntry.arguments?.getString("plantName")
+                    if (plantName != null) {
+                        DetailScreen(plantName = plantName, onBack = { bottomNavController.popBackStack() })
                     } else {
-                        navController.navigate(screen.route) {
-                            popUpTo("home") { inclusive = false }
+                        Text("Error: Plant name not found")
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+fun BottomNavigationBar(navController: NavHostController) {
+    val items = listOf(
+        BottomNavItem("home", "Home", Icons.Filled.Home),
+        BottomNavItem("tambah", "Tambah", Icons.Filled.Add),
+        BottomNavItem("profile", "Profile", Icons.Filled.Person)
+    )
+
+    NavigationBar(modifier = Modifier.fillMaxWidth()) {
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentDestination = navBackStackEntry?.destination
+
+        items.forEach { item ->
+            NavigationBarItem(
+                modifier = Modifier.weight(1f),
+                icon = { Icon(item.icon, contentDescription = item.label) },
+                label = { Text(item.label) },
+                selected = currentDestination?.hierarchy?.any { it.route == item.route } == true,
+                onClick = {
+                    if (currentDestination?.route != item.route) {
+                        navController.navigate(item.route) {
+                            popUpTo(navController.graph.findNode(item.route)!!.id) {
+                                inclusive = false
+                            }
                             launchSingleTop = true
                         }
                     }
@@ -89,46 +108,9 @@ fun BottomNavigationBar(navController: NavHostController, isLoggedIn: Boolean) {
 }
 
 @Composable
-fun NavigationGraph(
-    navController: NavHostController,
-    isLoggedIn: Boolean,
-    onLoginSuccess: () -> Unit
-) {
-    NavHost(navController, startDestination = "connectMeta") {
-        composable("connectMeta") { ConnectMetaScreen(navController) }
-        composable("home") { HomeScreen(navController) }
-        composable("addData") { TambahScreen(navController) }
-        composable("profile") { ProfileScreen() }
-        composable("login") { LoginScreen(navController) }
-        composable("register") { RegisterScreen(navController) }
-        composable("detail/{plant}") { backStackEntry ->
-            val plant = backStackEntry.arguments?.getString("plant") ?: ""
-            DetailScreen(plant, onBack = {navController.popBackStack()})
-        }
-    }
+fun TambahScreen(navController: NavHostController) {
+    TambahScreenContent(navController = navController) // Use the composable from tambah.kt
 }
-
-@Composable
-fun ProfileScreen() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text("Profile Screen")
-    }
-}
-
-sealed class Screen(val route: String, val title: String, val icon: ImageVector) {
-    object Home : Screen("home", "Beranda", Icons.Filled.Home)
-    object AddData : Screen("addData", "Tambah Data", Icons.Filled.Add)
-    object Profile : Screen("profile", "Saya", Icons.Filled.Person)
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MainScreenPreview() {
-    COMPOSE_TA09Theme {
-        MyApp()
-    }
-}
-
 
 @Composable
 fun ProfileScreen(navController: NavHostController) {

@@ -149,7 +149,7 @@ fun RegisterScreen(navController: NavController) {
                     Text(
                         "Sudah memiliki akun? Masuk sekarang!",
                         fontSize = 14.sp,
-                        color = Color(0xFF1B5E20)
+                        color = Color(0xFF4E4E4E)
                     )
                 }
             }
