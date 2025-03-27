@@ -15,7 +15,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
@@ -26,10 +28,18 @@ import com.example.compose_ta09.ui.theme.COMPOSE_TA09Theme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
         enableEdgeToEdge()
         setContent {
             COMPOSE_TA09Theme {
-                MyApp()
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    MyApp()
+                }
             }
         }
     }
@@ -52,9 +62,17 @@ fun MainScreen(navController: NavHostController) {
     val bottomNavController = rememberNavController()
 
     Scaffold(
+        modifier = Modifier
+            .fillMaxSize()
+            .windowInsetsPadding(WindowInsets.systemBars),
         bottomBar = { BottomNavigationBar(bottomNavController) }
-    ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
+    ) {
+        innerPadding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
             NavHost(navController = bottomNavController, startDestination = "home") {
                 composable("home") { HomeScreen(bottomNavController) } // Pass bottomNavController
                 composable("tambah") { TambahScreen(bottomNavController) }
@@ -84,28 +102,33 @@ fun BottomNavigationBar(navController: NavHostController) {
         BottomNavItem("profile", "Profile", Icons.Filled.Person)
     )
 
-    val darkGreenColor = colorResource(id = R.color.dark_green) // Ambil warna dari resource
+    val darkGreenColor = colorResource(id = R.color.dark_green)
+
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
+
+    if (currentDestination?.hierarchy?.any { it.route == "detail/{plantName}" } == true) {
+        return
+    }
 
     NavigationBar(
         modifier = Modifier.fillMaxWidth(),
         containerColor = Color.White
     ) {
-        val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentDestination = navBackStackEntry?.destination
-
         items.forEach { item ->
             NavigationBarItem(
                 modifier = Modifier.weight(1f),
                 icon = { Icon(item.icon, contentDescription = item.label, tint = darkGreenColor) },
                 label = { Text(item.label, color = darkGreenColor) },
-                selected = currentDestination?.hierarchy?.any { it.route == item.route } == true,
+                selected = currentDestination?.route == item.route,
                 onClick = {
                     if (currentDestination?.route != item.route) {
                         navController.navigate(item.route) {
-                            popUpTo(navController.graph.findNode(item.route)!!.id) {
-                                inclusive = false
-                            }
                             launchSingleTop = true
+                            restoreState = true
+                            popUpTo(navController.graph.startDestinationId) {
+                                saveState = true
+                            }
                         }
                     }
                 }
@@ -117,6 +140,14 @@ fun BottomNavigationBar(navController: NavHostController) {
 @Composable
 fun TambahScreen(navController: NavHostController) {
     TambahScreenContent(navController = navController) // Use the composable from tambah.kt
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp), // Tambahkan padding yang sesuai
+        contentAlignment = Alignment.Center
+    ) {
+        Text("Tambah Screen", fontSize = 24.sp)
+    }
 }
 
 @Composable

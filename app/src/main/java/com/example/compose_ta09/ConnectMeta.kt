@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -39,7 +40,7 @@ fun ConnectMetaScreen(navController: NavController) {
                     "Akses Tanaman Herbal",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1B5E20)
+                    color = colorResource(id = R.color.black)
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -64,7 +65,6 @@ fun ConnectMetaScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(4.dp))
                 Text("or", fontSize = 14.sp, color = Color.Gray)
-                Spacer(modifier = Modifier.height(4.dp))
 
                 TextButton(onClick = {
                     navController.navigate("main") {

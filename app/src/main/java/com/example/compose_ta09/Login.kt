@@ -24,7 +24,7 @@ fun LoginScreen(navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFE8F5E9)), // Warna background hijau muda
+            .background(colorResource(id = R.color.soft_green)), // Warna background hijau muda
         contentAlignment = Alignment.Center
     ) {
         Card(
@@ -42,6 +42,7 @@ fun LoginScreen(navController: NavController) {
                     text = "LOGIN",
                     fontSize = 30.sp,
                     fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.headlineLarge,
                     color = colorResource(id = R.color.dark_green)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -90,7 +91,7 @@ fun LoginScreen(navController: NavController) {
                             navController.navigate("main") // Pindah ke halaman utama
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)), // Warna hijau gelap
+                    colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.dark_green)), // Warna hijau gelap
                     shape = RoundedCornerShape(50),
                     modifier = Modifier.fillMaxWidth(0.8f)
                 ) {
@@ -102,7 +103,7 @@ fun LoginScreen(navController: NavController) {
                     Text(
                         "Belum memiliki akun? Daftar disini",
                         fontSize = 14.sp,
-                        color = colorResource(id = R.color.purple_500)
+                        color = colorResource(id = R.color.purple)
                     )
                 }
             }

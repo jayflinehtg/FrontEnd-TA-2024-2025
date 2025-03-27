@@ -39,7 +39,6 @@ import java.util.Locale
 class DetailActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         val plantName = intent.getStringExtra("plantName") ?: "Tanaman"
 
         setContent {
@@ -57,10 +56,9 @@ fun DetailScreen(plantName: String, onBack: () -> Unit) {
     var comments by remember { mutableStateOf(listOf("Pengguna 2 Membalas Informasi Sebelumnya")) }
     val context = LocalContext.current
     val backgroundColor = colorResource(id = R.color.soft_green)
-    val cardBackgroundColor = Color.White
-    val currentTime = SimpleDateFormat("HH:mm dd MMM yyyy", Locale.getDefault()).format(Date()) // Added year
+    val currentTime = SimpleDateFormat("HH:mm dd MMM yyyy", Locale.getDefault()).format(Date())
+    val postDateTime = SimpleDateFormat("HH:mm dd MMM yyyy", Locale.getDefault()).format(Date())
 
-    // Menyimpan daftar rating pengguna
     var userRatings by remember { mutableStateOf(mutableListOf(userRating)) }
 
     Scaffold(
@@ -92,37 +90,55 @@ fun DetailScreen(plantName: String, onBack: () -> Unit) {
                     }
                 }
             )
+        },
+        bottomBar = {
+            CommentInputSection(
+                comment = comment,
+                onCommentChange = { comment = it },
+                onSendComment = {
+                    if (comment.isNotBlank()) {
+                        comments = comments + comment
+                        comment = ""
+                    }
+                }
+            )
         }
-    ) { innerPadding -> // Use innerPadding provided by Scaffold
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(backgroundColor)
                 .verticalScroll(rememberScrollState())
-                .padding(innerPadding) // Apply innerPadding here
-                .padding(horizontal = 16.dp, vertical = 16.dp) // Your content padding
+                .padding(innerPadding)
+                .padding(horizontal = 16.dp, vertical = 16.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Image(
                     painter = painterResource(R.drawable.baseline_person_24),
                     contentDescription = "Profile Picture",
                     modifier = Modifier
-                        .size(40.dp)
+                        .size(50.dp)
                         .clip(CircleShape)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Nama Pengguna 1", fontWeight = FontWeight.Bold)
+                Column {
+                    Text("Nama Pengguna 1", fontWeight = FontWeight.Bold)
+                    Text(postDateTime, fontSize = 12.sp, color = Color.Gray) // Menampilkan tanggal dan waktu postingan
+                }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(14.dp))
             Text("Nama Tanaman:", fontWeight = FontWeight.Bold)
             Text(plantName)
+
             Spacer(modifier = Modifier.height(4.dp))
             Text("Kandungan Tanaman:", fontWeight = FontWeight.Bold)
             Text("Kandungan Tanaman Kandungan Tanaman")
+
             Spacer(modifier = Modifier.height(4.dp))
             Text("Manfaat Tanaman:", fontWeight = FontWeight.Bold)
             Text("Manfaat Tanaman, Manfaat Tanaman")
+
             Spacer(modifier = Modifier.height(4.dp))
             Text("Cara Pengolahan:", fontWeight = FontWeight.Bold)
             Text("1. Cara pengolahan 1\n2. Cara pengolahan 2")
@@ -145,7 +161,10 @@ fun DetailScreen(plantName: String, onBack: () -> Unit) {
             }
 
             Spacer(modifier = Modifier.height(8.dp))
+            val totalRating = userRatings.sum()
+            Text("Total Rating: $totalRating/${userRatings.size * 5}", fontWeight = FontWeight.Bold)
 
+            Spacer(modifier = Modifier.height(8.dp))
             Text("Beri Rating:", fontWeight = FontWeight.Bold)
             Row {
                 for (i in 1..5) {
@@ -164,11 +183,6 @@ fun DetailScreen(plantName: String, onBack: () -> Unit) {
             }
 
             Spacer(modifier = Modifier.height(8.dp))
-            // Menghitung total rating
-            val totalRating = userRatings.sum()
-            Text("Total Rating: $totalRating/${userRatings.size * 5}", fontWeight = FontWeight.Bold)
-
-            Spacer(modifier = Modifier.height(8.dp))
             Text("Review Pengguna Lainnya:", fontWeight = FontWeight.Bold)
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -181,33 +195,44 @@ fun DetailScreen(plantName: String, onBack: () -> Unit) {
                     Text(currentTime, fontSize = 12.sp, color = Color.Gray)
                 }
             }
+        }
+    }
+}
 
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                OutlinedTextField(
-                    value = comment,
-                    onValueChange = { comment = it },
-                    placeholder = { Text("Tambahkan Komentar Anda...") },
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = {
-                        if (comment.isNotBlank()) {
-                            comments = comments + comment
-                            comment = ""
-                        }
-                    }),
-                    modifier = Modifier.weight(1f)
-                )
-                IconButton(onClick = {
-                    if (comment.isNotBlank()) {
-                        comments = comments + comment
-                        comment = ""
-                    }
-                }) {
-                    Icon(Icons.Filled.Send, contentDescription = "Send Comment")
-                }
+@Composable
+fun CommentInputSection(
+    comment: String,
+    onCommentChange: (String) -> Unit,
+    onSendComment: () -> Unit
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = Color.Transparent,
+        tonalElevation = 0.dp
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedTextField(
+                value = comment,
+                onValueChange = onCommentChange,
+                placeholder = { Text("Tambahkan Komentar Anda...", color = Color.Gray) },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    disabledContainerColor = Color.Transparent
+                ),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { onSendComment() }),
+                modifier = Modifier
+                    .weight(1f)
+                    .background(Color.Transparent)
+            )
+            IconButton(onClick = onSendComment) {
+                Icon(Icons.Filled.Send, contentDescription = "Send Comment")
             }
         }
     }

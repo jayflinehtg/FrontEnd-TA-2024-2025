@@ -29,7 +29,7 @@ fun RegisterScreen(navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFEFF5EE)), // Warna background utama
+            .background(colorResource(id = R.color.soft_green)), // Warna background utama
         contentAlignment = Alignment.Center
     ) {
         Card(
@@ -48,6 +48,7 @@ fun RegisterScreen(navController: NavController) {
                     "REGISTER",
                     fontSize = 30.sp,
                     fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.headlineLarge,
                     color = colorResource(id = R.color.dark_green),
                 )
                 Spacer(modifier = Modifier.height(4.dp))
@@ -150,7 +151,7 @@ fun RegisterScreen(navController: NavController) {
                     Text(
                         "Sudah memiliki akun? Masuk sekarang!",
                         fontSize = 14.sp,
-                        color = colorResource(id = R.color.purple_500),
+                        color = colorResource(id = R.color.purple),
                     )
                 }
             }
