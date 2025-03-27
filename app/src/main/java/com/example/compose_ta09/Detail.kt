@@ -117,31 +117,31 @@ fun DetailScreen(plantName: String, onBack: () -> Unit) {
                     painter = painterResource(R.drawable.baseline_person_24),
                     contentDescription = "Profile Picture",
                     modifier = Modifier
-                        .size(50.dp)
+                        .size(45.dp)
                         .clip(CircleShape)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Column {
-                    Text("Nama Pengguna 1", fontWeight = FontWeight.Bold)
+                    Text("Nama Pengguna 1", fontSize = 17.sp, fontWeight = FontWeight.Bold)
                     Text(postDateTime, fontSize = 12.sp, color = Color.Gray) // Menampilkan tanggal dan waktu postingan
                 }
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
-            Text("Nama Tanaman:", fontWeight = FontWeight.Bold)
-            Text(plantName)
+            Spacer(modifier = Modifier.height(15.dp))
+            Text("Nama Tanaman:", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(plantName, fontSize = 15.sp)
 
             Spacer(modifier = Modifier.height(4.dp))
-            Text("Kandungan Tanaman:", fontWeight = FontWeight.Bold)
-            Text("Kandungan Tanaman Kandungan Tanaman")
+            Text("Kandungan Tanaman:", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text("Kandungan Tanaman Kandungan Tanaman", fontSize = 15.sp)
 
             Spacer(modifier = Modifier.height(4.dp))
-            Text("Manfaat Tanaman:", fontWeight = FontWeight.Bold)
-            Text("Manfaat Tanaman, Manfaat Tanaman")
+            Text("Manfaat Tanaman:", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text("Manfaat Tanaman, Manfaat Tanaman", fontSize = 15.sp)
 
             Spacer(modifier = Modifier.height(4.dp))
-            Text("Cara Pengolahan:", fontWeight = FontWeight.Bold)
-            Text("1. Cara pengolahan 1\n2. Cara pengolahan 2")
+            Text("Cara Pengolahan:", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text("1. Cara pengolahan 1\n2. Cara pengolahan 2", fontSize = 15.sp)
 
             Spacer(modifier = Modifier.height(16.dp))
             Box(
@@ -165,7 +165,7 @@ fun DetailScreen(plantName: String, onBack: () -> Unit) {
             Text("Total Rating: $totalRating/${userRatings.size * 5}", fontWeight = FontWeight.Bold)
 
             Spacer(modifier = Modifier.height(8.dp))
-            Text("Beri Rating:", fontWeight = FontWeight.Bold)
+            Text("Beri Rating:", fontSize = 16.sp, fontWeight = FontWeight.Bold)
             Row {
                 for (i in 1..5) {
                     IconButton(onClick = {
@@ -183,7 +183,7 @@ fun DetailScreen(plantName: String, onBack: () -> Unit) {
             }
 
             Spacer(modifier = Modifier.height(8.dp))
-            Text("Review Pengguna Lainnya:", fontWeight = FontWeight.Bold)
+            Text("Review Pengguna Lainnya:", fontSize = 16.sp, fontWeight = FontWeight.Bold)
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -191,7 +191,7 @@ fun DetailScreen(plantName: String, onBack: () -> Unit) {
             ) {
                 Column(modifier = Modifier.padding(8.dp)) {
                     Text("Nama Pengguna 2", fontWeight = FontWeight.Bold)
-                    Text(comments.first())
+                    Text(comments.first(), fontSize = 15.sp)
                     Text(currentTime, fontSize = 12.sp, color = Color.Gray)
                 }
             }
