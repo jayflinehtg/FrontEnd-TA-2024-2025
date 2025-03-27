@@ -146,7 +146,7 @@ fun TambahScreen(navController: NavHostController) {
             .padding(16.dp), // Tambahkan padding yang sesuai
         contentAlignment = Alignment.Center
     ) {
-        Text("Tambah Screen", fontSize = 24.sp)
+//        Text("Tambah Screen", fontSize = 24.sp)
     }
 }
 
