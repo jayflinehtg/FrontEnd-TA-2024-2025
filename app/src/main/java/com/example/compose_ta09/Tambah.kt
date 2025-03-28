@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -19,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -56,20 +58,39 @@ fun TambahScreenContent(navController: NavController) { // Renamed to avoid conf
             .padding(16.dp)
             .verticalScroll(scrollState),
     ) {
-        // Header
-        Text(
-            text = "Tambah Data Tanaman",
-            fontSize = 30.sp,
-            fontWeight = FontWeight.Bold,
-            color = colorResource(id = R.color.dark_green),
-        )
-        Text(
-            text = "Tanaman Herbal",
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold,
-            color = colorResource(id = R.color.dark_green),
-            modifier = Modifier.padding(top = 4.dp)
-        )
+        // ====================
+        // HEADER DENGAN LOGO
+        // ====================
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(bottom = 12.dp)
+        ) {
+            Spacer(modifier = Modifier.height(7.dp))
+            Image(
+                painter = painterResource(id = R.drawable.plant),
+                contentDescription = "Logo Tanaman",
+                modifier = Modifier.size(70.dp)
+            )
+
+            // Header
+            Column (
+                modifier = Modifier.padding(start = 8.dp)
+            ) {
+                Text(
+                    text = "Tambah Data Tanaman",
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = colorResource(id = R.color.dark_green),
+                )
+                Text(
+                    text = "Tanaman Herbal",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = colorResource(id = R.color.dark_green),
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
