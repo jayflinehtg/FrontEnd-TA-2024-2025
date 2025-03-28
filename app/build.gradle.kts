@@ -59,6 +59,7 @@ dependencies {
     implementation(libs.androidx.navigation.runtime.android)
     implementation("androidx.navigation:navigation-compose:2.5.3")
     implementation("androidx.navigation:navigation-compose:2.7.6")
+    implementation(libs.androidx.foundation.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -66,8 +67,11 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    // Ktor dependencies
-    implementation("io.ktor:ktor-client-android:2.2.1")
-    implementation("io.ktor:ktor-client-gson:2.2.1")
-    implementation("io.ktor:ktor-client-logging:2.2.1")
+    // Retrofit Dependencies
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0") // Untuk konversi JSON ke objek
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.1") // Optional: Untuk log request/responses
+
+    // Kotlin Serialization Dependencies
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.21") // Serialization JSON
 }
