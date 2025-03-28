@@ -1,5 +1,6 @@
 package com.example.compose_ta09
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -9,6 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -17,11 +19,45 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.compose_ta09.services.RetrofitClient
+import com.example.compose_ta09.models.LoginResponse
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 @Composable
 fun LoginScreen(navController: NavController) {
     var password by remember { mutableStateOf("") }
     var passwordError by remember { mutableStateOf<String?>(null) }
+
+    val context = LocalContext.current
+
+    // Fungsi untuk login
+    fun login() {
+        RetrofitClient.apiService.login(password).enqueue(object : Callback<LoginResponse> {
+            override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
+                if (response.isSuccessful) {
+                    // Jika login berhasil
+                    val loginResponse = response.body()
+                    if (loginResponse?.success == true) {
+                        // Jika login sukses, lanjutkan ke main screen
+                        navController.navigate("main")
+                    } else {
+                        // Tampilkan pesan error jika login gagal
+                        Toast.makeText(context, loginResponse?.message, Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    // Tampilkan error jika request gagal
+                    Toast.makeText(context, "Login failed", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+                // Tampilkan error jika gagal menghubungi server
+                Toast.makeText(context, "Something went wrong", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
 
     Box(
         modifier = Modifier
@@ -108,13 +144,7 @@ fun LoginScreen(navController: NavController) {
 
                     // Tombol Masuk
                     Button(
-                        onClick = {
-                            if (password.isEmpty()) {
-                                passwordError = "Kata sandi tidak boleh kosong"
-                            } else {
-                                navController.navigate("main") // Pindah ke halaman utama
-                            }
-                        },
+                        onClick = { login() },
                         colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.dark_green)), // Warna hijau gelap
                         shape = RoundedCornerShape(50),
                         modifier = Modifier.fillMaxWidth(0.8f)

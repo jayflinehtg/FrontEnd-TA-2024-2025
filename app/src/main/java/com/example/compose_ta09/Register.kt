@@ -19,6 +19,12 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.compose_ta09.models.RegisterRequest
+import com.example.compose_ta09.services.RetrofitClient
+import com.example.compose_ta09.models.RegisterResponse
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,6 +41,38 @@ fun RegisterScreen(navController: NavController) {
     var roleError by remember { mutableStateOf<String?>(null) }
     var fullNameError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
+
+    // Fungsi untuk register
+    fun register() {
+        val registerRequest = RegisterRequest(
+            fullName = fullName,
+            password = password,
+            role = role
+        )
+
+        RetrofitClient.apiService.register(registerRequest).enqueue(object : Callback<RegisterResponse> {
+            override fun onResponse(call: Call<RegisterResponse>, response: Response<RegisterResponse>) {
+                if (response.isSuccessful) {
+                    // Jika registrasi berhasil
+                    val registerResponse = response.body()
+                    if (registerResponse?.success == true) {
+                        Toast.makeText(context, "Registrasi Berhasil!", Toast.LENGTH_SHORT).show()
+                        navController.navigate("login") // Redirect ke halaman login
+                    } else {
+                        Toast.makeText(context, registerResponse?.message, Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    // Tampilkan error jika request gagal
+                    Toast.makeText(context, "Registrasi gagal", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<RegisterResponse>, t: Throwable) {
+                // Tampilkan error jika gagal menghubungi server
+                Toast.makeText(context, "Something went wrong", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
 
     Box(
         modifier = Modifier
@@ -204,20 +242,7 @@ fun RegisterScreen(navController: NavController) {
 
                     // Tombol Daftar
                     Button(
-                        onClick = {
-                            // Validasi input
-                            roleError = if (role.isBlank()) "Role wajib dipilih!" else null
-                            fullNameError =
-                                if (fullName.isBlank()) "Nama Lengkap tidak boleh kosong!" else null
-                            passwordError =
-                                if (password.isBlank()) "Kata Sandi tidak boleh kosong!" else null
-
-                            if (fullNameError == null && passwordError == null) {
-                                Toast.makeText(context, "Registrasi Berhasil!", Toast.LENGTH_SHORT)
-                                    .show()
-                                navController.navigate("login") // Redirect ke halaman login
-                            }
-                        },
+                        onClick = { register() },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1B5E20)),
                         shape = RoundedCornerShape(50),
                         modifier = Modifier.fillMaxWidth(0.8f)

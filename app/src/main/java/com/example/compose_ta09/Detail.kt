@@ -207,7 +207,7 @@ fun CommentInputSection(
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = Color.Transparent,
+        color = colorResource(id = R.color.soft_green),
         tonalElevation = 0.dp
     ) {
         Row(
@@ -221,9 +221,9 @@ fun CommentInputSection(
                 onValueChange = onCommentChange,
                 placeholder = { Text("Tambahkan Komentar Anda...", color = Color.Gray) },
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    disabledContainerColor = Color.Transparent
+                    focusedContainerColor = colorResource(id = R.color.soft_green),
+                    unfocusedContainerColor = colorResource(id = R.color.soft_green),
+                    disabledContainerColor = colorResource(id = R.color.soft_green)
                 ),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = { onSendComment() }),
