@@ -66,4 +66,8 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    // Ktor dependencies
+    implementation("io.ktor:ktor-client-android:2.2.1")
+    implementation("io.ktor:ktor-client-gson:2.2.1")
+    implementation("io.ktor:ktor-client-logging:2.2.1")
 }
