@@ -22,11 +22,12 @@ fun ConnectMetaScreen(navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFEFF5EE)),
+            .background(colorResource(id = R.color.soft_green)),
         contentAlignment = Alignment.Center
     ) {
         Card(
             shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(6.dp),
             modifier = Modifier
                 .padding(16.dp)
@@ -40,7 +41,7 @@ fun ConnectMetaScreen(navController: NavController) {
                     "Akses Tanaman Herbal",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
-                    color = colorResource(id = R.color.black)
+                    color = colorResource(id = R.color.dark_green)
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
