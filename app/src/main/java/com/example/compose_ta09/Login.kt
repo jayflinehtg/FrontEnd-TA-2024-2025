@@ -71,16 +71,6 @@ fun LoginScreen(navController: NavController) {
                     modifier = Modifier.padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-
-                    Text(
-                        text = "LOGIN",
-                        fontSize = 30.sp,
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.headlineLarge,
-                        color = colorResource(id = R.color.dark_green)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-
                     // Input Kata Sandi
                     OutlinedTextField(
                         value = password,
