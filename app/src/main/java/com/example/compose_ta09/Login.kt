@@ -26,7 +26,7 @@ import retrofit2.Callback
 import retrofit2.Response
 
 @Composable
-fun LoginScreen(navController: NavController) {
+fun LoginScreen(navController: NavController, walletAddress: String?) {
     var password by remember { mutableStateOf("") }
     var passwordError by remember { mutableStateOf<String?>(null) }
 
@@ -34,13 +34,18 @@ fun LoginScreen(navController: NavController) {
 
     // Fungsi untuk login
     fun login() {
+        if (password.isBlank()) {
+            passwordError = "Password tidak boleh kosong"
+            return
+        }
+
+        // Panggil API untuk login menggunakan walletAddress dan password
         RetrofitClient.apiService.login(password).enqueue(object : Callback<LoginResponse> {
             override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
                 if (response.isSuccessful) {
-                    // Jika login berhasil
                     val loginResponse = response.body()
                     if (loginResponse?.success == true) {
-                        // Jika login sukses, lanjutkan ke main screen
+                        // Jika login berhasil, lanjutkan ke main screen
                         navController.navigate("main")
                     } else {
                         // Tampilkan pesan error jika login gagal

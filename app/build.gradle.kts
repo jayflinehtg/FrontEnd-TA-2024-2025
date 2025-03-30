@@ -37,13 +37,24 @@ android {
     buildFeatures {
         compose = true
     }
+
+    // Updated packaging options
+    packaging {
+        resources.excludes.add("org/bouncycastle/pqc/crypto/picnic/lowmcL3.bin.properties")
+        resources.excludes.add("org/bouncycastle/LICENSE")
+    }
+}
+
+configurations {
+    all {
+        resolutionStrategy {
+            force ("org.bouncycastle:bcprov-jdk15to18:1.80") // Force to use this version to avoid conflicts
+        }
+    }
 }
 
 dependencies {
     implementation("androidx.compose.material:material-icons-extended:1.6.7")
-//    implementation("androidx.compose.foundation:foundation:1.6.7")
-//    implementation("androidx.compose.material3:material3:1.2.0")
-    implementation("io.coil-kt:coil-compose:2.6.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
@@ -67,8 +78,22 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
     // Retrofit Dependencies
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0") // Untuk konversi JSON ke objek
-    implementation("com.squareup.okhttp3:logging-interceptor:4.9.1") // Optional: Untuk log request/responses
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.1")
+
+    // Gson
+    implementation("com.google.code.gson:gson:2.8.8")
+
+    // ethers.js Android library (Maven Central)
+    implementation("io.kriptal.ethers:ethers-core:1.3.0")
+
+    // walletconnect-android library (Maven Central)
+    implementation("com.walletconnect:walletconnect-modal:1.5.11")
+
+    // Add Jitpack for additional dependencies
+    implementation("com.walletconnect:android-core:1.35.2") // Example WalletConnect dependency
+    implementation("com.github.alexzhirkevich:custom-qr-generator:1.6.2") // Another example dependency
 }

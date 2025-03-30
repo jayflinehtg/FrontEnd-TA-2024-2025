@@ -28,32 +28,44 @@ import retrofit2.Response
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterScreen(navController: NavController) {
+fun RegisterScreen(navController: NavController, walletAddress: String?) {
     val context = LocalContext.current
 
-    var role by remember { mutableStateOf("") }
     var fullName by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    var roleExpanded by remember { mutableStateOf(false) }
-    val roleList = listOf("Pengguna", "Validator")
-
-    var roleError by remember { mutableStateOf<String?>(null) }
     var fullNameError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
 
     // Fungsi untuk register
     fun register() {
+        if (fullName.isBlank()) {
+            fullNameError = "Nama lengkap tidak boleh kosong"
+            return
+        }
+
+        if (password.isBlank()) {
+            passwordError = "Password tidak boleh kosong"
+            return
+        }
+
+        // Cek apakah walletAddress null, jika ya, berikan error
+        if (walletAddress == null) {
+            Toast.makeText(context, "Wallet address tidak ditemukan, silakan coba lagi", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         val registerRequest = RegisterRequest(
             fullName = fullName,
             password = password,
-            role = role
+            role = "Pengguna", // Anda bisa memilih role sesuai kebutuhan
+            walletAddress = walletAddress // Wallet Address di sini tidak null
         )
 
+        // Memanggil API untuk registrasi
         RetrofitClient.apiService.register(registerRequest).enqueue(object : Callback<RegisterResponse> {
             override fun onResponse(call: Call<RegisterResponse>, response: Response<RegisterResponse>) {
                 if (response.isSuccessful) {
-                    // Jika registrasi berhasil
                     val registerResponse = response.body()
                     if (registerResponse?.success == true) {
                         Toast.makeText(context, "Registrasi Berhasil!", Toast.LENGTH_SHORT).show()
@@ -62,13 +74,11 @@ fun RegisterScreen(navController: NavController) {
                         Toast.makeText(context, registerResponse?.message, Toast.LENGTH_SHORT).show()
                     }
                 } else {
-                    // Tampilkan error jika request gagal
                     Toast.makeText(context, "Registrasi gagal", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<RegisterResponse>, t: Throwable) {
-                // Tampilkan error jika gagal menghubungi server
                 Toast.makeText(context, "Something went wrong", Toast.LENGTH_SHORT).show()
             }
         })
@@ -77,7 +87,7 @@ fun RegisterScreen(navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(id = R.color.soft_green)), // Warna background utama
+            .background(colorResource(id = R.color.soft_green)),
         contentAlignment = Alignment.TopCenter
     ) {
         Column(
@@ -113,7 +123,7 @@ fun RegisterScreen(navController: NavController) {
 
             Card(
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF98CDA0)), // Warna hijau muda
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF98CDA0)),
                 modifier = Modifier
                     .padding(16.dp)
                     .fillMaxWidth(0.85f)
@@ -122,59 +132,6 @@ fun RegisterScreen(navController: NavController) {
                     modifier = Modifier.padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // === DROPDOWN ROLE ===
-                    ExposedDropdownMenuBox(
-                        expanded = roleExpanded,
-                        onExpandedChange = { roleExpanded = !roleExpanded }
-                    ) {
-                        OutlinedTextField(
-                            value = role,
-                            onValueChange = {},
-                            readOnly = true,
-                            label = { Text("Pilih Role") },
-                            placeholder = { Text("Pilih Role") },
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = roleExpanded) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .menuAnchor(),
-                            shape = RoundedCornerShape(8.dp),
-                            isError = roleError != null,
-                            colors = TextFieldDefaults.colors(
-                                unfocusedContainerColor = Color.White,
-                                focusedContainerColor = Color.White,
-                                errorContainerColor = Color.White
-                            )
-                        )
-                        ExposedDropdownMenu(
-                            expanded = roleExpanded,
-                            onDismissRequest = { roleExpanded = false },
-                            modifier = Modifier
-                                .background(Color.White)
-                        ) {
-                            roleList.forEach { selectionOption ->
-                                DropdownMenuItem(
-                                    text = { Text(selectionOption) },
-                                    onClick = {
-                                        role = selectionOption
-                                        roleExpanded = false
-                                        roleError = null
-                                    },
-                                    modifier = Modifier.background(Color.White)
-                                )
-                            }
-                        }
-                    }
-                    if (roleError != null) {
-                        Text(
-                            text = roleError!!,
-                            color = Color.Red,
-                            fontSize = 12.sp,
-                            modifier = Modifier.align(Alignment.Start)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
                     // Input Nama Lengkap
                     OutlinedTextField(
                         value = fullName,

@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,13 +25,13 @@ import androidx.navigation.compose.*
 import androidx.navigation.navArgument
 import com.example.app.ui.screens.HomeScreen
 import com.example.compose_ta09.ui.theme.COMPOSE_TA09Theme
+import com.example.compose_ta09.services.SharedPreferencesManager
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
-
         enableEdgeToEdge()
         setContent {
             COMPOSE_TA09Theme {
@@ -47,13 +48,30 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MyApp() {
+    val context = LocalContext.current // Get the context here
+    val walletAddress = SharedPreferencesManager.getUserWalletAddress(context) // Get wallet address from SharedPreferences
+    val isLoggedIn = remember { mutableStateOf(SharedPreferencesManager.isUserLoggedIn(context)) }
     val navController = rememberNavController()
+
+    // Navigate to the right screen based on login state
+    if (isLoggedIn.value) {
+        navController.navigate("main") // User is logged in
+    } else {
+        navController.navigate("connectMeta") // User is not logged in, connect wallet
+    }
 
     NavHost(navController = navController, startDestination = "connectMeta") {
         composable("connectMeta") { ConnectMetaScreen(navController) }
-        composable("main") { MainScreen(navController) } // BottomNav hanya muncul di MainScreen
-        composable("register") { RegisterScreen(navController) }
-        composable("login") { LoginScreen(navController) }
+        composable("main") { MainScreen(navController) }
+        composable("register/{walletAddress}") { backStackEntry ->
+            val walletAddress = backStackEntry.arguments?.getString("walletAddress")
+            RegisterScreen(navController, walletAddress) // Pass walletAddress to RegisterScreen
+        }
+        composable("login/{walletAddress}") { backStackEntry ->
+            val walletAddress = backStackEntry.arguments?.getString("walletAddress")
+            LoginScreen(navController, walletAddress) // Pass walletAddress to LoginScreen
+        }
+        composable("tambah") { TambahScreenContent(navController) }
     }
 }
 
@@ -65,17 +83,16 @@ fun MainScreen(navController: NavHostController) {
         modifier = Modifier
             .fillMaxSize()
             .windowInsetsPadding(WindowInsets.systemBars),
-        bottomBar = { BottomNavigationBar(bottomNavController) }
-    ) {
-        innerPadding ->
+        bottomBar = { BottomNavigationBar(bottomNavController, navController) }
+    ) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
             NavHost(navController = bottomNavController, startDestination = "home") {
-                composable("home") { HomeScreen(bottomNavController) } // Pass bottomNavController
-                composable("tambah") { TambahScreen(bottomNavController) }
+                composable("home") { HomeScreen(bottomNavController) }
+                composable("tambah") { TambahScreenContent(bottomNavController) } // Adjusted to call TambahScreenContent
                 composable("profile") { ProfileScreen(navController) }
                 composable(
                     "detail/{plantName}",
@@ -93,9 +110,8 @@ fun MainScreen(navController: NavHostController) {
     }
 }
 
-
 @Composable
-fun BottomNavigationBar(navController: NavHostController) {
+fun BottomNavigationBar(navController: NavHostController, mainNavController: NavHostController) {
     val items = listOf(
         BottomNavItem("home", "Home", Icons.Filled.Home),
         BottomNavItem("tambah", "Tambah", Icons.Filled.Add),
@@ -107,6 +123,7 @@ fun BottomNavigationBar(navController: NavHostController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
+    // Hide BottomNav if we're in a detail page
     if (currentDestination?.hierarchy?.any { it.route == "detail/{plantName}" } == true) {
         return
     }
@@ -138,28 +155,29 @@ fun BottomNavigationBar(navController: NavHostController) {
 }
 
 @Composable
-fun TambahScreen(navController: NavHostController) {
-    TambahScreenContent(navController = navController) // Use the composable from tambah.kt
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp), // Tambahkan padding yang sesuai
-        contentAlignment = Alignment.Center
-    ) {
-//        Text("Tambah Screen", fontSize = 24.sp)
-    }
-}
-
-@Composable
 fun ProfileScreen(navController: NavHostController) {
+    val context = LocalContext.current
+    val isLoggedIn = remember { mutableStateOf(SharedPreferencesManager.isUserLoggedIn(context)) }
+
     LaunchedEffect(Unit) {
-        navController.navigate("connectMeta") {
-            popUpTo("main") { inclusive = true }
+        if (!isLoggedIn.value) {
+            navController.navigate("connectMeta") {
+                popUpTo("main") { inclusive = true }
+            }
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        CircularProgressIndicator()
+    if (!isLoggedIn.value) {
+        // Show loading indicator if the user is not logged in yet
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+    } else {
+        // Show profile if user is logged in
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("Welcome to Profile Page")
+            // Add Logout button here if needed
+        }
     }
 }
 
