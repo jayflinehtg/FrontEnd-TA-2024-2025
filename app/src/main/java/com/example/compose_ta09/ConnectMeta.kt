@@ -3,6 +3,7 @@ package com.example.compose_ta09
 import android.util.Log
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,33 +20,43 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.compose.ui.viewinterop.AndroidView
 
 @Composable
 fun ConnectMetaScreen(navController: NavController) {
     var isWalletConnected by remember { mutableStateOf(false) }
     var walletAddress by remember { mutableStateOf<String?>(null) }
+    var loading by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
 
     // WebView untuk menampilkan halaman MetaMask
-    val webView = remember { mutableStateOf<WebView?>(null) }
+    AndroidView(
+        factory = { context ->
+            WebView(context).apply {
+                settings.javaScriptEnabled = true
+                webViewClient = WebViewClient() // Menghindari membuka browser eksternal
 
-    // Setting WebView dan memuat halaman HTML yang berisi ethers.js
-    LaunchedEffect(Unit) {
-        val myWebView = WebView(context)
-        myWebView.settings.javaScriptEnabled = true
-        myWebView.addJavascriptInterface(object {
-            @JavascriptInterface
-            fun sendWalletAddress(address: String) {
-                walletAddress = address
-                isWalletConnected = true
-                Log.d("MetaMask", "Wallet Address: $address")
+                // Menambahkan JavascriptInterface untuk berinteraksi dengan Android
+                addJavascriptInterface(object {
+                    @JavascriptInterface
+                    fun sendWalletAddress(address: String) {
+                        walletAddress = address
+                        isWalletConnected = true
+                        loading = false
+                        Log.d("MetaMask", "Wallet Address: $address")
+                    }
+                }, "Android")
+
+                // Memuat halaman HTML dari file lokal
+                loadUrl("file:///android_asset/web3page.html")
             }
-        }, "Android")
-
-        myWebView.loadUrl("file:///android_asset/web3page.html")
-        webView.value = myWebView
-    }
+        },
+        update = { webView ->
+            // Tidak perlu memanggil loadUrl disini karena sudah dipanggil di dalam factory
+        },
+        modifier = Modifier.fillMaxSize()
+    )
 
     // Tampilan Connect Wallet
     Box(
@@ -86,8 +97,11 @@ fun ConnectMetaScreen(navController: NavController) {
 
                 Button(
                     onClick = {
-                        // Ketika tombol Connect Wallet diklik
-                        webView.value?.loadUrl("javascript:connectMetaMask()")
+                        if (!loading) {
+                            loading = true
+                            // Panggil fungsi JavaScript connectMetaMask di halaman HTML
+                            (context as? WebView)?.loadUrl("javascript:connectMetaMask()")
+                        }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
                     shape = RoundedCornerShape(50),
@@ -120,6 +134,11 @@ fun ConnectMetaScreen(navController: NavController) {
                     LaunchedEffect(walletAddress) {
                         navController.navigate("register/${walletAddress}") // Kirim walletAddress ke halaman registrasi
                     }
+                }
+
+                // Menampilkan loading indicator saat menunggu koneksi wallet
+                if (loading) {
+                    CircularProgressIndicator(color = Color(0xFF2E7D32))
                 }
             }
         }

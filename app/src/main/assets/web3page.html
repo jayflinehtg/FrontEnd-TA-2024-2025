@@ -48,29 +48,33 @@
         alert('Please install MetaMask to use this feature');
     }
 
-    // Set up the connect wallet button
-    const connectButton = document.getElementById('connectButton');
-    const walletAddressElement = document.getElementById('walletAddress');
-
-    // Connect Wallet Function
-    connectButton.addEventListener('click', async () => {
+    // Define the connectMetaMask function
+    async function connectMetaMask() {
         if (typeof window.ethereum !== 'undefined') {
             try {
                 // Request account access
                 const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
                 const walletAddress = accounts[0];
-                walletAddressElement.innerText = 'Connected: ' + walletAddress;
+                document.getElementById('walletAddress').innerText = 'Connected: ' + walletAddress;
 
                 // Send wallet address to Android using JavascriptInterface
                 if (window.Android) {
-                    window.Android.sendWalletAddress(walletAddress);
+                    window.Android.sendWalletAddress(walletAddress);  // Make sure this method is accessible from Android
                 }
             } catch (error) {
                 console.error('Error connecting to MetaMask:', error);
                 alert('Failed to connect to MetaMask. Please try again.');
             }
+        } else {
+            alert('MetaMask not installed');
         }
-    });
+    }
+
+    // Set up the connect wallet button
+    const connectButton = document.getElementById('connectButton');
+
+    // Connect Wallet Function
+    connectButton.addEventListener('click', connectMetaMask);
 </script>
 
 </body>
