@@ -16,6 +16,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables {
+            useSupportLibrary = true
+        }
     }
 
     buildTypes {
@@ -27,18 +30,24 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     kotlinOptions {
         jvmTarget = "11"
     }
+
     buildFeatures {
         compose = true
     }
 
-    // Updated packaging options
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.11"
+    }
+
     packaging {
         resources.excludes.add("org/bouncycastle/pqc/crypto/picnic/lowmcL3.bin.properties")
         resources.excludes.add("org/bouncycastle/LICENSE")
@@ -48,7 +57,7 @@ android {
 configurations {
     all {
         resolutionStrategy {
-            force ("org.bouncycastle:bcprov-jdk15to18:1.80") // Force to use this version to avoid conflicts
+            force("org.bouncycastle:bcprov-jdk15to18:1.80") // Force to use this version to avoid conflicts
         }
     }
 }
@@ -87,13 +96,9 @@ dependencies {
     // Gson
     implementation("com.google.code.gson:gson:2.8.8")
 
-    // ethers.js Android library (Maven Central)
-    implementation("io.kriptal.ethers:ethers-core:1.3.0")
+    // MetaMask SDK for wallet integration
+    implementation("io.metamask.androidsdk:metamask-android-sdk:0.6.6") // MetaMask SDK dependency for Android
 
-    // walletconnect-android library (Maven Central)
-    implementation("com.walletconnect:walletconnect-modal:1.5.11")
-
-    // Add Jitpack for additional dependencies
-    implementation("com.walletconnect:android-core:1.35.2") // Example WalletConnect dependency
-    implementation("com.github.alexzhirkevich:custom-qr-generator:1.6.2") // Another example dependency
+    // Web3j (for Ethereum interaction)
+    implementation("org.web3j:core:4.8.7") // Web3j for Ethereum interaction
 }

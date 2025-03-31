@@ -53,11 +53,13 @@ fun MyApp() {
     val isLoggedIn = remember { mutableStateOf(SharedPreferencesManager.isUserLoggedIn(context)) }
     val navController = rememberNavController()
 
-    // Navigate to the right screen based on login state
-    if (isLoggedIn.value) {
-        navController.navigate("main") // User is logged in
-    } else {
-        navController.navigate("connectMeta") // User is not logged in, connect wallet
+    // Logika untuk navigasi berdasarkan status login
+    LaunchedEffect(isLoggedIn.value) {
+        if (isLoggedIn.value) {
+            navController.navigate("main") // User is logged in
+        } else {
+            navController.navigate("connectMeta") // User is not logged in, connect wallet
+        }
     }
 
     NavHost(navController = navController, startDestination = "connectMeta") {
@@ -92,7 +94,7 @@ fun MainScreen(navController: NavHostController) {
         ) {
             NavHost(navController = bottomNavController, startDestination = "home") {
                 composable("home") { HomeScreen(bottomNavController) }
-                composable("tambah") { TambahScreenContent(bottomNavController) } // Adjusted to call TambahScreenContent
+                composable("tambah") { TambahScreenContent(bottomNavController) }
                 composable("profile") { ProfileScreen(navController) }
                 composable(
                     "detail/{plantName}",
@@ -123,7 +125,6 @@ fun BottomNavigationBar(navController: NavHostController, mainNavController: Nav
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    // Hide BottomNav if we're in a detail page
     if (currentDestination?.hierarchy?.any { it.route == "detail/{plantName}" } == true) {
         return
     }
@@ -168,15 +169,12 @@ fun ProfileScreen(navController: NavHostController) {
     }
 
     if (!isLoggedIn.value) {
-        // Show loading indicator if the user is not logged in yet
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
         }
     } else {
-        // Show profile if user is logged in
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text("Welcome to Profile Page")
-            // Add Logout button here if needed
         }
     }
 }

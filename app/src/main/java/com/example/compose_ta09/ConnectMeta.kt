@@ -115,7 +115,7 @@ fun ConnectMetaScreen(navController: NavController) {
                 }
 
                 // Kondisi jika wallet terhubung
-                if (isWalletConnected) {
+                if (isWalletConnected && walletAddress != null) {
                     // Setelah wallet terhubung, arahkan ke halaman registrasi
                     LaunchedEffect(walletAddress) {
                         navController.navigate("register/${walletAddress}") // Kirim walletAddress ke halaman registrasi

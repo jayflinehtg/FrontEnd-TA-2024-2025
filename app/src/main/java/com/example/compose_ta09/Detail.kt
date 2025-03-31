@@ -14,9 +14,9 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -63,7 +63,7 @@ fun DetailScreen(plantName: String, onBack: () -> Unit) {
 
     Scaffold(
         topBar = {
-            SmallTopAppBar(
+            TopAppBar(
                 title = { Text("Postingan", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { onBack() }) {
@@ -232,7 +232,7 @@ fun CommentInputSection(
                     .background(Color.Transparent)
             )
             IconButton(onClick = onSendComment) {
-                Icon(Icons.Filled.Send, contentDescription = "Send Comment")
+                Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send Comment")
             }
         }
     }
