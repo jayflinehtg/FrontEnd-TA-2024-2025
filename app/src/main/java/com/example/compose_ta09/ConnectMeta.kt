@@ -24,6 +24,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 
 @Composable
 fun ConnectMetaScreen(navController: NavController) {
+    // State management
     var isWalletConnected by remember { mutableStateOf(false) }
     var walletAddress by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(false) }
@@ -35,7 +36,7 @@ fun ConnectMetaScreen(navController: NavController) {
         factory = { context ->
             WebView(context).apply {
                 settings.javaScriptEnabled = true
-                webViewClient = WebViewClient() // Menghindari membuka browser eksternal
+                webViewClient = WebViewClient()  // Menghindari membuka browser eksternal
 
                 // Menambahkan JavascriptInterface untuk berinteraksi dengan Android
                 addJavascriptInterface(object {
@@ -52,10 +53,7 @@ fun ConnectMetaScreen(navController: NavController) {
                 loadUrl("file:///android_asset/web3page.html")
             }
         },
-        update = { webView ->
-            // Tidak perlu memanggil loadUrl disini karena sudah dipanggil di dalam factory
-        },
-        modifier = Modifier.fillMaxSize()
+        update = { webView -> }
     )
 
     // Tampilan Connect Wallet
