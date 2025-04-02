@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Menambahkan izin untuk akses internet -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/plant"
@@ -10,6 +13,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.COMPOSE_TA09"
         tools:targetApi="31">
+
+        <!-- MainActivity untuk aplikasi -->
         <activity
             android:name=".MainActivity"
             android:exported="true"

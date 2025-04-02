@@ -36,24 +36,40 @@ fun ConnectMetaScreen(navController: NavController) {
         factory = { context ->
             WebView(context).apply {
                 settings.javaScriptEnabled = true
-                webViewClient = WebViewClient()  // Menghindari membuka browser eksternal
+                webViewClient = object : WebViewClient() {
+                    override fun onPageFinished(view: WebView?, url: String?) {
+                        super.onPageFinished(view, url)
+                        Log.d("MetaMask", "WebView page finished loading")
+                        // Panggil JavaScript connectMetaMask hanya setelah halaman selesai dimuat
+                        if (!loading) {
+                            loading = true
+                            loadUrl("javascript:connectMetaMask()")
+                            Log.d("MetaMask", "Calling JavaScript connectMetaMask()")
+                        }
+                    }
+                }
 
                 // Menambahkan JavascriptInterface untuk berinteraksi dengan Android
                 addJavascriptInterface(object {
                     @JavascriptInterface
                     fun sendWalletAddress(address: String) {
+                        Log.d("MetaMask", "Received wallet address: $address")
                         walletAddress = address
                         isWalletConnected = true
                         loading = false
-                        Log.d("MetaMask", "Wallet Address: $address")
+                        Log.d("MetaMask", "Wallet Connected: $isWalletConnected, Address: $walletAddress")
                     }
                 }, "Android")
 
                 // Memuat halaman HTML dari file lokal
                 loadUrl("file:///android_asset/web3page.html")
+                Log.d("MetaMask", "WebView Loaded with URL: file:///android_asset/web3page.html")
             }
         },
-        update = { webView -> }
+        update = { webView ->
+            Log.d("MetaMask", "WebView Updated.")
+        },
+        modifier = Modifier.fillMaxSize()
     )
 
     // Tampilan Connect Wallet
@@ -97,8 +113,10 @@ fun ConnectMetaScreen(navController: NavController) {
                     onClick = {
                         if (!loading) {
                             loading = true
+                            Log.d("MetaMask", "Connect Wallet Button Clicked")
                             // Panggil fungsi JavaScript connectMetaMask di halaman HTML
                             (context as? WebView)?.loadUrl("javascript:connectMetaMask()")
+                            Log.d("MetaMask", "Calling JavaScript connectMetaMask()")
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
@@ -137,6 +155,7 @@ fun ConnectMetaScreen(navController: NavController) {
                 // Menampilkan loading indicator saat menunggu koneksi wallet
                 if (loading) {
                     CircularProgressIndicator(color = Color(0xFF2E7D32))
+                    Log.d("MetaMask", "Loading: Wallet is connecting...")
                 }
             }
         }
