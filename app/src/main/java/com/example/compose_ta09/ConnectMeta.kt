@@ -40,12 +40,6 @@ fun ConnectMetaScreen(navController: NavController) {
                     override fun onPageFinished(view: WebView?, url: String?) {
                         super.onPageFinished(view, url)
                         Log.d("MetaMask", "WebView page finished loading")
-                        // Panggil JavaScript connectMetaMask hanya setelah halaman selesai dimuat
-                        if (!loading) {
-                            loading = true
-                            loadUrl("javascript:connectMetaMask()")
-                            Log.d("MetaMask", "Calling JavaScript connectMetaMask()")
-                        }
                     }
                 }
 
