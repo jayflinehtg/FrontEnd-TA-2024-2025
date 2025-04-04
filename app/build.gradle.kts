@@ -63,6 +63,7 @@ configurations {
 }
 
 dependencies {
+    // Compose dependencies
     implementation("androidx.compose.material:material-icons-extended:1.6.7")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
     implementation("androidx.room:room-runtime:2.6.1")
@@ -101,4 +102,11 @@ dependencies {
 
     // Web3j (for Ethereum interaction)
     implementation("org.web3j:core:4.8.7") // Web3j for Ethereum interaction
+
+    // New required dependencies for Compose, Activity, and Lifecycle
+    implementation("androidx.compose.ui:ui:1.4.0")
+    implementation("androidx.compose.material3:material3:1.0.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.1")
+    implementation("androidx.compose.runtime:runtime:1.4.0")
+    implementation("androidx.compose.foundation:foundation:1.4.0")
 }
