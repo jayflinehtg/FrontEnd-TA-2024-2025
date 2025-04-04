@@ -1,5 +1,8 @@
 package com.example.compose_ta09
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.util.Log
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
@@ -21,52 +24,114 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.compose.ui.viewinterop.AndroidView
+import kotlinx.coroutines.delay
+
+class MetaMaskWebViewClient : WebViewClient() {
+    override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+        if (url == null) return false
+
+        Log.d("MetaMask", "Intercepting URL: $url")
+
+        val isMetaMaskUrl = url.startsWith("metamask:") ||
+                url.contains("metamask.app.link") ||
+                url.contains("chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn")
+
+        return if (isMetaMaskUrl) {
+            try {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                view?.context?.startActivity(intent)
+                true
+            } catch (e: Exception) {
+                Log.e("MetaMask", "Failed to open MetaMask", e)
+                val installIntent = Intent(Intent.ACTION_VIEW,
+                    Uri.parse("https://metamask.io/download.html")).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                view?.context?.startActivity(installIntent)
+                true
+            }
+        } else {
+            false
+        }
+    }
+}
+
+fun isMetaMaskInstalled(context: Context): Boolean {
+    val pm = context.packageManager
+    return try {
+        pm.getPackageInfo("io.metamask", 0)
+        true
+    } catch (e: Exception) {
+        false
+    }
+}
 
 @Composable
 fun ConnectMetaScreen(navController: NavController) {
-    // State management
     var isWalletConnected by remember { mutableStateOf(false) }
     var walletAddress by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(false) }
-
     val context = LocalContext.current
+    var webView by remember { mutableStateOf<WebView?>(null) }
 
-    // WebView untuk menampilkan halaman MetaMask
+    // Timeout handling
+    LaunchedEffect(loading) {
+        if (loading) {
+            delay(10000) // 10 detik timeout
+            if (loading) {
+                loading = false
+                try {
+                    val intent = Intent(Intent.ACTION_VIEW,
+                        Uri.parse("metamask://browser")).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    }
+                    context.startActivity(intent)
+                } catch (e: Exception) {
+                    Log.e("MetaMask", "Fallback failed", e)
+                    // Jika MetaMask tidak terpasang, arahkan ke halaman unduhan
+                    val installIntent = Intent(Intent.ACTION_VIEW,
+                        Uri.parse("https://metamask.io/download.html")).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    }
+                    context.startActivity(installIntent)
+                }
+            }
+        }
+    }
+
     AndroidView(
         factory = { context ->
             WebView(context).apply {
-                settings.javaScriptEnabled = true
-                webViewClient = object : WebViewClient() {
-                    override fun onPageFinished(view: WebView?, url: String?) {
-                        super.onPageFinished(view, url)
-                        Log.d("MetaMask", "WebView page finished loading")
-                    }
+                webView = this
+                settings.apply {
+                    javaScriptEnabled = true
+                    domStorageEnabled = true
+                    javaScriptCanOpenWindowsAutomatically = true
                 }
+                webViewClient = MetaMaskWebViewClient()
 
-                // Menambahkan JavascriptInterface untuk berinteraksi dengan Android
                 addJavascriptInterface(object {
                     @JavascriptInterface
                     fun sendWalletAddress(address: String) {
-                        Log.d("MetaMask", "Received wallet address: $address")
                         walletAddress = address
                         isWalletConnected = true
                         loading = false
-                        Log.d("MetaMask", "Wallet Connected: $isWalletConnected, Address: $walletAddress")
+                    }
+
+                    @JavascriptInterface
+                    fun connectionFailed() {
+                        loading = false
                     }
                 }, "Android")
 
-                // Memuat halaman HTML dari file lokal
                 loadUrl("file:///android_asset/web3page.html")
-                Log.d("MetaMask", "WebView Loaded with URL: file:///android_asset/web3page.html")
             }
-        },
-        update = { webView ->
-            Log.d("MetaMask", "WebView Updated.")
         },
         modifier = Modifier.fillMaxSize()
     )
 
-    // Tampilan Connect Wallet
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -107,27 +172,41 @@ fun ConnectMetaScreen(navController: NavController) {
                     onClick = {
                         if (!loading) {
                             loading = true
-                            Log.d("MetaMask", "Connect Wallet Button Clicked")
-                            // Panggil fungsi JavaScript connectMetaMask di halaman HTML
-                            (context as? WebView)?.loadUrl("javascript:connectMetaMask()")
-                            Log.d("MetaMask", "Calling JavaScript connectMetaMask()")
+                            webView?.post {
+                                webView?.evaluateJavascript("""
+                                    if (typeof connectMetaMask === 'function') {
+                                        connectMetaMask();
+                                    } else {
+                                        console.error('connectMetaMask not found');
+                                        window.Android.connectionFailed();
+                                    }
+                                """.trimIndent(), null)
+                            }
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
                     shape = RoundedCornerShape(50),
                     modifier = Modifier.fillMaxWidth(0.8f)
                 ) {
-                    Text("Connect Wallet", fontSize = 14.sp, color = Color.White)
+                    if (loading) {
+                        Box(modifier = Modifier.size(20.dp)) {
+                            CircularProgressIndicator(
+                                color = Color.White,
+                                strokeWidth = 2.dp
+                            )
+                        }
+                    } else {
+                        Text("Connect Wallet", fontSize = 14.sp, color = Color.White)
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(4.dp))
                 Text("or", fontSize = 14.sp, color = Color.Gray)
 
-                // Navigasi jika memilih "As a Guest"
                 TextButton(onClick = {
                     navController.navigate("main") {
                         popUpTo("connectMeta") { inclusive = true }
-                        launchSingleTop = true // Mencegah layar duplikasi
+                        launchSingleTop = true
                     }
                 }) {
                     Text(
@@ -138,18 +217,10 @@ fun ConnectMetaScreen(navController: NavController) {
                     )
                 }
 
-                // Kondisi jika wallet terhubung
                 if (isWalletConnected && walletAddress != null) {
-                    // Setelah wallet terhubung, arahkan ke halaman registrasi
                     LaunchedEffect(walletAddress) {
-                        navController.navigate("register/${walletAddress}") // Kirim walletAddress ke halaman registrasi
+                        navController.navigate("register/${walletAddress}")
                     }
-                }
-
-                // Menampilkan loading indicator saat menunggu koneksi wallet
-                if (loading) {
-                    CircularProgressIndicator(color = Color(0xFF2E7D32))
-                    Log.d("MetaMask", "Loading: Wallet is connecting...")
                 }
             }
         }
