@@ -64,11 +64,11 @@ configurations {
 
 dependencies {
     // Compose dependencies
-    implementation("androidx.compose.material:material-icons-extended:1.6.7")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
+    implementation("androidx.compose.material:material-icons-extended:1.7.8")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
-    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -78,8 +78,8 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.runtime.android)
-    implementation("androidx.navigation:navigation-compose:2.5.3")
-    implementation("androidx.navigation:navigation-compose:2.7.6")
+    implementation("androidx.navigation:navigation-compose:2.8.9")
+    implementation("androidx.navigation:navigation-compose:2.8.9")
     implementation(libs.androidx.foundation.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -90,23 +90,26 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     // Retrofit Dependencies
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation("com.squareup.okhttp3:logging-interceptor:4.9.1")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
     // Gson
-    implementation("com.google.code.gson:gson:2.8.8")
+    implementation("com.google.code.gson:gson:2.10.1")
 
     // MetaMask SDK for wallet integration
     implementation("io.metamask.androidsdk:metamask-android-sdk:0.6.6") // MetaMask SDK dependency for Android
 
     // Web3j (for Ethereum interaction)
-    implementation("org.web3j:core:4.8.7") // Web3j for Ethereum interaction
+    implementation("org.web3j:core:5.0.0") // Web3j for Ethereum interaction
 
     // New required dependencies for Compose, Activity, and Lifecycle
-    implementation("androidx.compose.ui:ui:1.4.0")
-    implementation("androidx.compose.material3:material3:1.0.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.1")
-    implementation("androidx.compose.runtime:runtime:1.4.0")
+    implementation("androidx.compose.ui:ui:1.7.8")
+    implementation("androidx.compose.material3:material3:1.3.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+    implementation("androidx.compose.runtime:runtime:1.7.8")
     implementation("androidx.compose.foundation:foundation:1.4.0")
+
+    // WebView support
+    implementation("androidx.webkit:webkit:1.13.0")
 }
