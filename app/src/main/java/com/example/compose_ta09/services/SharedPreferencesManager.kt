@@ -2,7 +2,6 @@ package com.example.compose_ta09.services
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.example.compose_ta09.MainActivity
 
 object SharedPreferencesManager {
 

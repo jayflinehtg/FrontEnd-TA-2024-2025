@@ -2,6 +2,7 @@ package com.example.compose_ta09
 
 import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -27,10 +28,15 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.compose_ta09.ui.theme.COMPOSE_TA09Theme
+import com.example.compose_ta09.models.PlantRequest
+import com.example.compose_ta09.models.PlantResponse
+import com.example.compose_ta09.services.RetrofitClient
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 @Composable
-fun TambahScreenContent(navController: NavController) { // Renamed to avoid confusion
+fun TambahScreenContent(navController: NavController) {
     var namaTanaman by remember { mutableStateOf("") }
     var namaLatin by remember { mutableStateOf("") }
     var komposisi by remember { mutableStateOf("") }
@@ -51,6 +57,41 @@ fun TambahScreenContent(navController: NavController) { // Renamed to avoid conf
 
     val scrollState = rememberScrollState()
 
+    // Fungsi untuk menyimpan data tanaman ke API
+    fun savePlantData() {
+        // Validasi form
+        namaTanamanError = namaTanaman.isBlank()
+        manfaatError = manfaat.isBlank()
+        caraPengolahanError = caraPengolahan.isBlank()
+        gambarError = gambarUri == null
+
+        if (!(namaTanamanError || manfaatError || caraPengolahanError || gambarError)) {
+            val plantRequest = PlantRequest(
+                name = namaTanaman,
+                namaLatin = namaLatin,
+                komposisi = komposisi,
+                kegunaan = manfaat,
+                caraPengolahan = caraPengolahan,
+                ipfsHash = gambarUri.toString() // Gambar disini bisa berupa IPFS hash atau URL
+            )
+
+            RetrofitClient.apiService.addPlant("Bearer YOUR_JWT_TOKEN", plantRequest).enqueue(object : Callback<PlantResponse> {
+                override fun onResponse(call: Call<PlantResponse>, response: Response<PlantResponse>) {
+                    if (response.isSuccessful) {
+                        Toast.makeText(context, "Data tanaman berhasil ditambahkan", Toast.LENGTH_SHORT).show()
+                        navController.popBackStack() // Kembali ke halaman sebelumnya
+                    } else {
+                        Toast.makeText(context, "Gagal menambahkan tanaman", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onFailure(call: Call<PlantResponse>, t: Throwable) {
+                    Toast.makeText(context, "Terjadi kesalahan: ${t.message}", Toast.LENGTH_SHORT).show()
+                }
+            })
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -58,9 +99,6 @@ fun TambahScreenContent(navController: NavController) { // Renamed to avoid conf
             .padding(16.dp)
             .verticalScroll(scrollState),
     ) {
-        // ====================
-        // HEADER DENGAN LOGO
-        // ====================
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(bottom = 12.dp)
@@ -72,7 +110,6 @@ fun TambahScreenContent(navController: NavController) { // Renamed to avoid conf
                 modifier = Modifier.size(70.dp)
             )
 
-            // Header
             Column (
                 modifier = Modifier.padding(start = 8.dp)
             ) {
@@ -111,7 +148,6 @@ fun TambahScreenContent(navController: NavController) { // Renamed to avoid conf
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Pilih Gambar
                 Text("Gambar Tanaman *", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                 Button(
                     onClick = { pickImageLauncher.launch("image/*") },
@@ -126,18 +162,8 @@ fun TambahScreenContent(navController: NavController) { // Renamed to avoid conf
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Button Simpan
                 Button(
-                    onClick = {
-                        namaTanamanError = namaTanaman.isBlank()
-                        manfaatError = manfaat.isBlank()
-                        caraPengolahanError = caraPengolahan.isBlank()
-                        gambarError = gambarUri == null
-
-                        if (!(namaTanamanError || manfaatError || caraPengolahanError || gambarError)) {
-                            // Handle save data jika valid
-                        }
-                    },
+                    onClick = { savePlantData() },
                     colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.dark_green)),
                     modifier = Modifier.fillMaxWidth().height(50.dp)
                 ) {

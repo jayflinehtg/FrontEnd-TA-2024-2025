@@ -114,6 +114,7 @@ fun ProfileScreen(navController: NavController, jwtToken: String?) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Tombol Logout untuk logout dan disconnect wallet
                 Button(
                     onClick = { logout() },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),

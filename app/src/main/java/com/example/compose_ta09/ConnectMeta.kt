@@ -173,7 +173,7 @@ fun ConnectMetaScreen(navController: NavController) {
                         if (!loading) {
                             loading = true
                             webView?.post {
-                                webView?.evaluateJavascript("""
+                                webView?.evaluateJavascript(""" 
                                     if (typeof connectMetaMask === 'function') {
                                         connectMetaMask();
                                     } else {

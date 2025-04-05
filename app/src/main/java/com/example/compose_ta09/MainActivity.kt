@@ -50,15 +50,6 @@ fun MyApp() {
     val isLoggedIn = remember { mutableStateOf(SharedPreferencesManager.isUserLoggedIn(context)) }
     val navController = rememberNavController()
 
-    // Logika untuk navigasi berdasarkan status login
-    LaunchedEffect(isLoggedIn.value) {
-        if (isLoggedIn.value) {
-            navController.navigate("main") // User is logged in
-        } else {
-            navController.navigate("connectMeta") // User is not logged in, connect wallet
-        }
-    }
-
     NavHost(navController = navController, startDestination = if (isLoggedIn.value) "main" else "connectMeta") {
         composable("connectMeta") { ConnectMetaScreen(navController) }
         composable("main") { MainScreen(navController, jwtToken) } // Pass jwtToken to MainScreen

@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.compose_ta09.services.RetrofitClient
 import com.example.compose_ta09.models.LoginResponse
+import com.example.compose_ta09.models.LoginRequest
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -41,8 +42,19 @@ fun LoginScreen(navController: NavController, walletAddress: String?) {
             return
         }
 
+        if (walletAddress == null) {
+            Toast.makeText(context, "Wallet address belum terhubung. Silakan hubungkan wallet Anda.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Membuat objek LoginRequest
+        val loginRequest = LoginRequest(
+            walletAddress = walletAddress,
+            password = password
+        )
+
         // Panggil API untuk login menggunakan walletAddress dan password
-        RetrofitClient.apiService.login(password).enqueue(object : Callback<LoginResponse> {
+        RetrofitClient.apiService.login(loginRequest).enqueue(object : Callback<LoginResponse> {
             override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
                 if (response.isSuccessful) {
                     val loginResponse = response.body()

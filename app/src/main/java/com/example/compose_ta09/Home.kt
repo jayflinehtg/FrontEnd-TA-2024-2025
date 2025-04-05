@@ -1,8 +1,6 @@
 package com.example.compose_ta09
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -31,12 +29,37 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.example.compose_ta09.R
+import com.example.compose_ta09.services.RetrofitClient
+import com.example.compose_ta09.models.PlantResponse
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 @Composable
-fun HomeScreen(navController: NavHostController, jwtToken: String?) { // Menambahkan jwtToken sebagai parameter
+fun HomeScreen(navController: NavHostController, jwtToken: String?) {
     var searchQuery by remember { mutableStateOf("") }
-    val herbalPlants = listOf("Jahe", "Kunyit", "Temulawak", "Sambiloto")
-    val filteredPlants = herbalPlants.filter { it.contains(searchQuery, ignoreCase = true) }
+    var filteredPlants by remember { mutableStateOf<List<PlantResponse>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(false) }
+
+    // Fungsi untuk melakukan pencarian tanaman
+    fun searchPlants(query: String) {
+        isLoading = true
+        RetrofitClient.apiService.searchPlants(query, null, null, null).enqueue(object : Callback<List<PlantResponse>> {
+            override fun onResponse(call: Call<List<PlantResponse>>, response: Response<List<PlantResponse>>) {
+                isLoading = false
+                if (response.isSuccessful) {
+                    filteredPlants = response.body() ?: emptyList()
+                } else {
+                    Toast.makeText(navController.context, "Gagal memuat tanaman", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<List<PlantResponse>>, t: Throwable) {
+                isLoading = false
+                Toast.makeText(navController.context, "Gagal menghubungi server", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
 
     Column(
         modifier = Modifier
@@ -59,7 +82,7 @@ fun HomeScreen(navController: NavHostController, jwtToken: String?) { // Menamba
             )
 
             // Header
-            Column (
+            Column(
                 modifier = Modifier.padding(start = 8.dp)
             ) {
                 Text(
@@ -83,7 +106,14 @@ fun HomeScreen(navController: NavHostController, jwtToken: String?) { // Menamba
         // Search Bar
         OutlinedTextField(
             value = searchQuery,
-            onValueChange = { searchQuery = it },
+            onValueChange = {
+                searchQuery = it
+                if (it.isNotEmpty()) {
+                    searchPlants(it)
+                } else {
+                    filteredPlants = emptyList() // Clear search results if query is empty
+                }
+            },
             placeholder = { Text("Cari Nama Tanaman...") },
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
             modifier = Modifier
@@ -95,78 +125,69 @@ fun HomeScreen(navController: NavHostController, jwtToken: String?) { // Menamba
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // List tanaman herbal
-        LazyColumn(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            items(filteredPlants) { plant ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 10.dp)
-                        .shadow(6.dp, RoundedCornerShape(12.dp)),
-                    shape = RoundedCornerShape(12.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
-                ) {
-                    Row(
+        // Jika sedang loading, tampilkan indikator loading
+        if (isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        } else {
+            // List tanaman herbal berdasarkan hasil pencarian
+            LazyColumn(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(filteredPlants) { plant ->
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(20.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            .padding(vertical = 10.dp)
+                            .shadow(6.dp, RoundedCornerShape(12.dp)),
+                        shape = RoundedCornerShape(12.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White)
                     ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Park,
-                            contentDescription = "Herbal Icon",
-                            tint = Color(0xFF498553),
-                            modifier = Modifier.size(50.dp)
-                        )
-
-                        Spacer(modifier = Modifier.width(16.dp))
-
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = plant,
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF498553),
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(20.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Park,
+                                contentDescription = "Herbal Icon",
+                                tint = Color(0xFF498553),
+                                modifier = Modifier.size(50.dp)
                             )
 
-                            Spacer(modifier = Modifier.height(5.dp))
+                            Spacer(modifier = Modifier.width(16.dp))
 
-                            Row {
-                                repeat(5) {
-                                    Icon(
-                                        imageVector = Icons.Default.Star,
-                                        contentDescription = "Star",
-                                        tint = Color(0xFFFFD700),
-                                        modifier = Modifier.size(20.dp)
-                                    )
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = plant.name,
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF498553),
+                                )
+
+                                Spacer(modifier = Modifier.height(5.dp))
+
+                                Row {
+                                    repeat(5) {
+                                        Icon(
+                                            imageVector = Icons.Default.Star,
+                                            contentDescription = "Star",
+                                            tint = Color(0xFFFFD700),
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
                                 }
                             }
-                        }
 
-                        TextButton(onClick = { navController.navigate("detail/$plant") }) {
-                            Text("Lihat Detail", color = Color(0xFF498553))
+                            TextButton(onClick = { navController.navigate("detail/${plant.plantId}") }) {
+                                Text("Lihat Detail", color = Color(0xFF498553))
+                            }
                         }
                     }
                 }
-            }
-        }
-
-        // Jika jwtToken ada, tampilkan aksi logout
-        jwtToken?.let {
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = {
-                    // Logout atau aksi lain yang bergantung pada jwtToken
-                    // Panggil fungsi logout jika diinginkan
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
-                modifier = Modifier.fillMaxWidth(0.8f)
-            ) {
-                Text("Logout", fontSize = 14.sp, color = Color.White)
             }
         }
     }
