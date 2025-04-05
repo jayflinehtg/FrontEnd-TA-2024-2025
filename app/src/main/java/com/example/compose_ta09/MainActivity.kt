@@ -17,13 +17,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
-import androidx.navigation.navArgument
-import com.example.app.ui.screens.HomeScreen
 import com.example.compose_ta09.ui.theme.COMPOSE_TA09Theme
 import com.example.compose_ta09.services.SharedPreferencesManager
 
@@ -48,8 +45,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MyApp() {
-    val context = LocalContext.current // Get the context here
-    val walletAddress = SharedPreferencesManager.getUserWalletAddress(context) // Get wallet address from SharedPreferences
+    val context = LocalContext.current // Mendapatkan context
+    val jwtToken = SharedPreferencesManager.getUserWalletAddress(context) // Mengambil wallet address dari SharedPreferences
     val isLoggedIn = remember { mutableStateOf(SharedPreferencesManager.isUserLoggedIn(context)) }
     val navController = rememberNavController()
 
@@ -62,9 +59,9 @@ fun MyApp() {
         }
     }
 
-    NavHost(navController = navController, startDestination = "connectMeta") {
+    NavHost(navController = navController, startDestination = if (isLoggedIn.value) "main" else "connectMeta") {
         composable("connectMeta") { ConnectMetaScreen(navController) }
-        composable("main") { MainScreen(navController) }
+        composable("main") { MainScreen(navController, jwtToken) } // Pass jwtToken to MainScreen
         composable("register/{walletAddress}") { backStackEntry ->
             val walletAddress = backStackEntry.arguments?.getString("walletAddress")
             RegisterScreen(navController, walletAddress) // Pass walletAddress to RegisterScreen
@@ -73,12 +70,13 @@ fun MyApp() {
             val walletAddress = backStackEntry.arguments?.getString("walletAddress")
             LoginScreen(navController, walletAddress) // Pass walletAddress to LoginScreen
         }
+        composable("profile") { ProfileScreen(navController, jwtToken) } // Pass jwtToken to ProfileScreen
         composable("tambah") { TambahScreenContent(navController) }
     }
 }
 
 @Composable
-fun MainScreen(navController: NavHostController) {
+fun MainScreen(navController: NavHostController, jwtToken: String?) { // Menerima jwtToken
     val bottomNavController = rememberNavController()
 
     Scaffold(
@@ -93,20 +91,9 @@ fun MainScreen(navController: NavHostController) {
                 .padding(innerPadding)
         ) {
             NavHost(navController = bottomNavController, startDestination = "home") {
-                composable("home") { HomeScreen(bottomNavController) }
+                composable("home") { HomeScreen(bottomNavController, jwtToken) } // Pass jwtToken
                 composable("tambah") { TambahScreenContent(bottomNavController) }
-                composable("profile") { ProfileScreen(navController) }
-                composable(
-                    "detail/{plantName}",
-                    arguments = listOf(navArgument("plantName") { defaultValue = "" })
-                ) { backStackEntry ->
-                    val plantName = backStackEntry.arguments?.getString("plantName")
-                    if (plantName != null) {
-                        DetailScreen(plantName = plantName, onBack = { bottomNavController.popBackStack() })
-                    } else {
-                        Text("Error: Plant name not found")
-                    }
-                }
+                composable("profile") { ProfileScreen(navController, jwtToken) } // Pass jwtToken
             }
         }
     }
@@ -151,30 +138,6 @@ fun BottomNavigationBar(navController: NavHostController, mainNavController: Nav
                     }
                 }
             )
-        }
-    }
-}
-
-@Composable
-fun ProfileScreen(navController: NavHostController) {
-    val context = LocalContext.current
-    val isLoggedIn = remember { mutableStateOf(SharedPreferencesManager.isUserLoggedIn(context)) }
-
-    LaunchedEffect(Unit) {
-        if (!isLoggedIn.value) {
-            navController.navigate("connectMeta") {
-                popUpTo("main") { inclusive = true }
-            }
-        }
-    }
-
-    if (!isLoggedIn.value) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
-        }
-    } else {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Welcome to Profile Page")
         }
     }
 }

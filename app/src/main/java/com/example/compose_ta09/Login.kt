@@ -16,6 +16,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -29,6 +30,7 @@ import retrofit2.Response
 fun LoginScreen(navController: NavController, walletAddress: String?) {
     var password by remember { mutableStateOf("") }
     var passwordError by remember { mutableStateOf<String?>(null) }
+    var isWalletConnected by remember { mutableStateOf(walletAddress != null) } // Cek jika wallet sudah terhubung
 
     val context = LocalContext.current
 
@@ -112,58 +114,79 @@ fun LoginScreen(navController: NavController, walletAddress: String?) {
                     modifier = Modifier.padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Input Kata Sandi
-                    OutlinedTextField(
-                        value = password,
-                        onValueChange = {
-                            password = it
-                            passwordError = null // Hapus error saat mengetik
-                        },
-                        label = { Text("Kata Sandi") },
-                        placeholder = { Text("Masukkan Kata Sandi") },
-                        visualTransformation = PasswordVisualTransformation(),
-                        textStyle = TextStyle(fontSize = 16.sp),
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(8.dp),
-                        isError = passwordError != null,
-                        colors = TextFieldDefaults.colors(
-                            unfocusedContainerColor = Color.White,
-                            focusedContainerColor = Color.White,
-                            disabledContainerColor = Color.White,
-                            errorContainerColor = Color.White
-                        )
-                    )
-
-                    // Tampilkan pesan error jika ada
-                    if (passwordError != null) {
+                    if (!isWalletConnected) {
+                        // Tampilkan pesan untuk menghubungkan wallet
                         Text(
-                            text = passwordError!!,
+                            text = "Silakan hubungkan wallet MetaMask terlebih dahulu",
+                            fontSize = 16.sp,
                             color = Color.Red,
-                            fontSize = 12.sp,
-                            modifier = Modifier.align(Alignment.Start)
+                            textAlign = TextAlign.Center
                         )
-                    }
-
-                    Spacer(modifier = Modifier.height(30.dp))
-
-                    // Tombol Masuk
-                    Button(
-                        onClick = { login() },
-                        colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.dark_green)), // Warna hijau gelap
-                        shape = RoundedCornerShape(50),
-                        modifier = Modifier.fillMaxWidth(0.8f)
-                    ) {
-                        Text("Masuk", fontSize = 14.sp, color = Color.White)
-                    }
-
-                    // Link ke Halaman Register
-                    TextButton(onClick = { navController.navigate("register") }) {
-                        Text(
-                            "Belum memiliki akun? Daftar disini",
-                            fontSize = 14.sp,
-                            color = colorResource(id = R.color.purple)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        // Tombol untuk pergi ke ConnectMetaScreen
+                        Button(
+                            onClick = { navController.navigate("connectMeta") },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
+                            shape = RoundedCornerShape(50),
+                            modifier = Modifier.fillMaxWidth(0.8f)
+                        ) {
+                            Text("Connect Wallet", fontSize = 14.sp, color = Color.White)
+                        }
+                    } else {
+                        // Jika wallet sudah terhubung, tampilkan input password
+                        // Input Kata Sandi
+                        OutlinedTextField(
+                            value = password,
+                            onValueChange = {
+                                password = it
+                                passwordError = null // Hapus error saat mengetik
+                            },
+                            label = { Text("Kata Sandi") },
+                            placeholder = { Text("Masukkan Kata Sandi") },
+                            visualTransformation = PasswordVisualTransformation(),
+                            textStyle = TextStyle(fontSize = 16.sp),
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(8.dp),
+                            isError = passwordError != null,
+                            colors = TextFieldDefaults.colors(
+                                unfocusedContainerColor = Color.White,
+                                focusedContainerColor = Color.White,
+                                disabledContainerColor = Color.White,
+                                errorContainerColor = Color.White
+                            )
                         )
+
+                        // Tampilkan pesan error jika ada
+                        if (passwordError != null) {
+                            Text(
+                                text = passwordError!!,
+                                color = Color.Red,
+                                fontSize = 12.sp,
+                                modifier = Modifier.align(Alignment.Start)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(30.dp))
+
+                        // Tombol Masuk
+                        Button(
+                            onClick = { login() },
+                            colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.dark_green)), // Warna hijau gelap
+                            shape = RoundedCornerShape(50),
+                            modifier = Modifier.fillMaxWidth(0.8f)
+                        ) {
+                            Text("Masuk", fontSize = 14.sp, color = Color.White)
+                        }
+
+                        // Link ke Halaman Register
+                        TextButton(onClick = { navController.navigate("register") }) {
+                            Text(
+                                "Belum memiliki akun? Daftar disini",
+                                fontSize = 14.sp,
+                                color = colorResource(id = R.color.purple)
+                            )
+                        }
                     }
                 }
             }

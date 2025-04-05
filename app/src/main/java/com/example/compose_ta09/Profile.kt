@@ -1,5 +1,7 @@
 package com.example.compose_ta09
 
+import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -48,13 +50,30 @@ fun ProfileScreen(navController: NavController, jwtToken: String?) {
         }
     }
 
-    // Fungsi untuk logout
+    // Fungsi untuk logout dan men-disconnect wallet MetaMask
     fun logout() {
         if (jwtToken != null) {
             RetrofitClient.apiService.logout("Bearer $jwtToken").enqueue(object : Callback<Void> {
                 override fun onResponse(call: Call<Void>, response: Response<Void>) {
                     if (response.isSuccessful) {
+                        // Menampilkan pesan logout sukses
                         Toast.makeText(context, "Logout berhasil", Toast.LENGTH_SHORT).show()
+
+                        // Setelah logout, coba untuk disconnect MetaMask Wallet
+                        try {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("metamask://disconnect")).apply {
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            }
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            // Jika MetaMask tidak terpasang atau tidak bisa disconnect, arahkan ke halaman unduh MetaMask
+                            val installIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://metamask.io/download.html")).apply {
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            }
+                            context.startActivity(installIntent)
+                        }
+
+                        // Setelah disconnect, arahkan pengguna ke halaman awal (connectMeta)
                         navController.navigate("connectMeta") {
                             popUpTo("main") { inclusive = true }
                         }

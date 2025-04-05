@@ -1,4 +1,4 @@
-package com.example.app.ui.screens
+package com.example.compose_ta09
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -29,23 +29,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController // Changed import
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavHostController
 import com.example.compose_ta09.R
 
-// Remove HomeActivity as HomeScreen will be part of the main navigation
-// class HomeActivity : ComponentActivity() {
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//        setContent {
-//            val navController = rememberNavController()
-//            HomeScreen(navController)
-//        }
-//    }
-// }
-
 @Composable
-fun HomeScreen(navController: NavHostController) { // Changed parameter type
+fun HomeScreen(navController: NavHostController, jwtToken: String?) { // Menambahkan jwtToken sebagai parameter
     var searchQuery by remember { mutableStateOf("") }
     val herbalPlants = listOf("Jahe", "Kunyit", "Temulawak", "Sambiloto")
     val filteredPlants = herbalPlants.filter { it.contains(searchQuery, ignoreCase = true) }
@@ -163,6 +151,22 @@ fun HomeScreen(navController: NavHostController) { // Changed parameter type
                         }
                     }
                 }
+            }
+        }
+
+        // Jika jwtToken ada, tampilkan aksi logout
+        jwtToken?.let {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = {
+                    // Logout atau aksi lain yang bergantung pada jwtToken
+                    // Panggil fungsi logout jika diinginkan
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
+                modifier = Modifier.fillMaxWidth(0.8f)
+            ) {
+                Text("Logout", fontSize = 14.sp, color = Color.White)
             }
         }
     }
