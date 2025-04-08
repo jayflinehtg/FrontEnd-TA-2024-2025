@@ -15,7 +15,7 @@ object RetrofitClient {
             "http://10.0.2.2:5000/" // Untuk Emulator
         } else {
             // Ganti dengan IP lokal komputer yang menjalankan backend
-            "http://192.168.1.101:5000/"  // Ganti dengan IP lokal komputer
+            "http://192.168.1.102:5000/"
         }
     }
 

@@ -1,6 +1,8 @@
 package com.example.compose_ta09
 
 import android.os.Bundle
+import android.net.Uri
+import android.content.Intent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -29,8 +31,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-        enableEdgeToEdge()
+        // Menangani deep link saat aplikasi diluncurkan
+        handleDeepLink()
+
         setContent {
             COMPOSE_TA09Theme {
                 Surface(
@@ -42,6 +45,20 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    // Fungsi untuk menangani deep link dari MetaMask
+    private fun handleDeepLink() {
+        val data: Uri? = intent?.data
+        if (intent?.action == Intent.ACTION_VIEW && data != null && data.scheme == "metamask") {
+            val walletAddress = data.getQueryParameter("walletAddress")
+            if (walletAddress != null) {
+                // Cukup navigasi ke RegisterScreen dengan walletAddress tanpa perlu memulai ulang MainActivity
+                val intent = Intent(this, MainActivity::class.java)
+                intent.putExtra("walletAddress", walletAddress)
+                startActivity(intent) // Memulai MainActivity dengan walletAddress, tanpa finish()
+            }
+        }
+    }
 }
 
 @Composable
@@ -50,6 +67,14 @@ fun MyApp() {
     val jwtToken = SharedPreferencesManager.getUserWalletAddress(context) // Mengambil wallet address dari SharedPreferences
     val isLoggedIn = remember { mutableStateOf(SharedPreferencesManager.isUserLoggedIn(context)) }
     val navController = rememberNavController()
+
+    // Ambil walletAddress yang dikirim dari deep link
+    val walletAddressFromLink = (context as? android.app.Activity)?.intent?.getStringExtra("walletAddress")
+
+    // Jika ada wallet address dari deep link, arahkan ke register screen
+    if (walletAddressFromLink != null) {
+        navController.navigate("register/$walletAddressFromLink")
+    }
 
     NavHost(navController = navController, startDestination = if (isLoggedIn.value) "main" else "connectMeta") {
         composable("connectMeta") {
@@ -79,21 +104,7 @@ fun MyApp() {
                 navController = navController,
                 jwtToken = jwtToken,
                 eventSink = { event ->
-                    // Tangani event terkait koneksi MetaMask di MainScreen
-                    when (event) {
-                        is EventSinkMetaMask.Connect -> {
-                            // Handle connect logic
-                        }
-                        is EventSinkMetaMask.Disconnect -> {
-                            // Handle disconnect logic
-                        }
-                        is EventSinkMetaMask.WalletConnected -> {
-                            // Handle wallet connected logic
-                        }
-                        is EventSinkMetaMask.ConnectionFailed -> {
-                            // Handle connection failed logic
-                        }
-                    }
+                    // Handle event here
                 }
             )
         }
@@ -102,21 +113,7 @@ fun MyApp() {
                 navController = navController,
                 jwtToken = jwtToken,
                 eventSink = { event ->
-                    // Tangani event terkait koneksi MetaMask di ProfileScreen
-                    when (event) {
-                        is EventSinkMetaMask.Connect -> {
-                            // Handle connect logic
-                        }
-                        is EventSinkMetaMask.Disconnect -> {
-                            // Handle disconnect logic
-                        }
-                        is EventSinkMetaMask.WalletConnected -> {
-                            // Handle wallet connected logic
-                        }
-                        is EventSinkMetaMask.ConnectionFailed -> {
-                            // Handle connection failed logic
-                        }
-                    }
+                    // Handle event here
                 }
             )
         }
@@ -128,7 +125,6 @@ fun MyApp() {
             val walletAddress = backStackEntry.arguments?.getString("walletAddress")
             LoginScreen(navController, walletAddress) // Pass walletAddress to LoginScreen
         }
-
         composable("tambah") { TambahScreenContent(navController) }
     }
 }

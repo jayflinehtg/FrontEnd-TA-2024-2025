@@ -78,26 +78,24 @@ fun ConnectMetaScreen(navController: NavController, eventSink: (EventSinkMetaMas
     var isWalletConnected by remember { mutableStateOf(false) }
     var walletAddress by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(false) }
+    var showConfirmationDialog by remember { mutableStateOf(false) } // Menambahkan deklarasi variabel ini
     val context = LocalContext.current
-    var webView by remember { mutableStateOf<WebView?>(null) }
 
     // Timeout handling jika koneksi gagal
     LaunchedEffect(loading) {
         if (loading) {
-            delay(10000) // 10 detik timeout
+            delay(10000) // Timeout 10 detik
             if (loading) {
                 loading = false
+                // Fallback untuk membuka MetaMask jika timeout
                 try {
-                    val intent = Intent(Intent.ACTION_VIEW,
-                        Uri.parse("metamask://browser")).apply {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("metamask://browser")).apply {
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK
                     }
                     context.startActivity(intent)
                 } catch (e: Exception) {
                     Log.e("MetaMask", "Fallback gagal", e)
-                    // Jika MetaMask tidak terpasang, arahkan ke halaman unduhan
-                    val installIntent = Intent(Intent.ACTION_VIEW,
-                        Uri.parse("https://metamask.io/download.html")).apply {
+                    val installIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://metamask.io/download.html")).apply {
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK
                     }
                     context.startActivity(installIntent)
@@ -106,15 +104,13 @@ fun ConnectMetaScreen(navController: NavController, eventSink: (EventSinkMetaMas
         }
     }
 
-    // Menyiapkan WebView untuk berinteraksi dengan MetaMask
+    // WebView untuk meminta akses MetaMask
     AndroidView(
         factory = { context ->
             WebView(context).apply {
-                webView = this
                 settings.apply {
                     javaScriptEnabled = true
                     domStorageEnabled = true
-                    javaScriptCanOpenWindowsAutomatically = true
                 }
                 webViewClient = MetaMaskWebViewClient()
 
@@ -124,18 +120,18 @@ fun ConnectMetaScreen(navController: NavController, eventSink: (EventSinkMetaMas
                         walletAddress = address
                         isWalletConnected = true
                         loading = false
-                        eventSink(EventSinkMetaMask.WalletConnected) // Memicu event WalletConnected
+                        eventSink(EventSinkMetaMask.WalletConnected)
                     }
 
                     @JavascriptInterface
                     fun connectionFailed() {
                         loading = false
-                        eventSink(EventSinkMetaMask.ConnectionFailed) // Memicu event ConnectionFailed
+                        eventSink(EventSinkMetaMask.ConnectionFailed)
                     }
                 }, "Android")
 
                 // Menjalankan JavaScript untuk meminta akses MetaMask
-                evaluateJavascript(""" 
+                evaluateJavascript("""
                     if (typeof window.ethereum !== 'undefined') {
                         ethereum.request({ method: 'eth_requestAccounts' })
                             .then(accounts => {
@@ -154,6 +150,14 @@ fun ConnectMetaScreen(navController: NavController, eventSink: (EventSinkMetaMas
         },
         modifier = Modifier.fillMaxSize()
     )
+
+    // Mengarahkan pengguna ke halaman registrasi setelah wallet terhubung
+    LaunchedEffect(isWalletConnected, walletAddress) {
+        if (isWalletConnected && walletAddress != null) {
+            // Navigasi ke halaman registrasi setelah wallet berhasil terhubung
+            navController.navigate("register/${walletAddress}")
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -194,10 +198,8 @@ fun ConnectMetaScreen(navController: NavController, eventSink: (EventSinkMetaMas
                 // Tombol untuk koneksi dompet
                 Button(
                     onClick = {
-                        if (!loading) {
-                            loading = true
-                            eventSink(EventSinkMetaMask.Connect) // Trigger Connect Event
-                        }
+                        // Tampilkan dialog konfirmasi
+                        showConfirmationDialog = true
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
                     shape = RoundedCornerShape(50),
@@ -232,14 +234,37 @@ fun ConnectMetaScreen(navController: NavController, eventSink: (EventSinkMetaMas
                         textDecoration = TextDecoration.Underline
                     )
                 }
-
-                // Redirect ke halaman registrasi setelah wallet terhubung
-                if (isWalletConnected && walletAddress != null) {
-                    LaunchedEffect(walletAddress) {
-                        navController.navigate("register/${walletAddress}")
-                    }
-                }
             }
         }
+    }
+
+    // Dialog Konfirmasi jika showConfirmationDialog bernilai true
+    if (showConfirmationDialog) {
+        AlertDialog(
+            onDismissRequest = { showConfirmationDialog = false },
+            title = { Text("Konfirmasi Koneksi Wallet") },
+            text = { Text("Apakah Anda yakin ingin menghubungkan dompet MetaMask?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showConfirmationDialog = false
+                        // Trigger connect wallet event
+                        if (!loading) {
+                            loading = true
+                            eventSink(EventSinkMetaMask.Connect) // Trigger Connect Event
+                        }
+                    }
+                ) {
+                    Text("Ya")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showConfirmationDialog = false }
+                ) {
+                    Text("Tidak")
+                }
+            }
+        )
     }
 }

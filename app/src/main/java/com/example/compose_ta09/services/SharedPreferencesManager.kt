@@ -30,6 +30,13 @@ object SharedPreferencesManager {
         return getSharedPreferences(context).getString(KEY_WALLET_ADDRESS, null)
     }
 
+    fun clearUserData(context: Context) {
+        val editor = getSharedPreferences(context).edit()
+        editor.remove(KEY_WALLET_ADDRESS)
+        editor.putBoolean(KEY_IS_LOGGED_IN, false)
+        editor.apply()
+    }
+
     fun logoutUser(context: Context) {
         val editor = getSharedPreferences(context).edit()
         editor.clear()
