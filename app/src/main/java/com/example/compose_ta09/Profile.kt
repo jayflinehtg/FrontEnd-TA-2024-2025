@@ -16,12 +16,13 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.compose_ta09.services.RetrofitClient
 import com.example.compose_ta09.models.UserDataResponse
+import com.example.compose_ta09.ui.viewModels.EventSinkMetaMask
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
 @Composable
-fun ProfileScreen(navController: NavController, jwtToken: String?) {
+fun ProfileScreen(navController: NavController, jwtToken: String?, eventSink: (EventSinkMetaMask) -> Unit) {
     val context = LocalContext.current
     var userData by remember { mutableStateOf<UserDataResponse?>(null) }
     var isLoading by remember { mutableStateOf(true) }
@@ -58,6 +59,9 @@ fun ProfileScreen(navController: NavController, jwtToken: String?) {
                     if (response.isSuccessful) {
                         // Menampilkan pesan logout sukses
                         Toast.makeText(context, "Logout berhasil", Toast.LENGTH_SHORT).show()
+
+                        // Trigger Disconnect event MetaMask
+                        eventSink(EventSinkMetaMask.Disconnect)
 
                         // Setelah logout, coba untuk disconnect MetaMask Wallet
                         try {

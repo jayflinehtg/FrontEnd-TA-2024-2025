@@ -24,9 +24,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.compose.ui.viewinterop.AndroidView
+import com.example.compose_ta09.ui.viewModels.EventSinkMetaMask
 import kotlinx.coroutines.delay
 
+// WebView client untuk menangani URL MetaMask
 class MetaMaskWebViewClient : WebViewClient() {
+    @Suppress("DEPRECATION")
     override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
         if (url == null) return false
 
@@ -44,7 +47,8 @@ class MetaMaskWebViewClient : WebViewClient() {
                 view?.context?.startActivity(intent)
                 true
             } catch (e: Exception) {
-                Log.e("MetaMask", "Failed to open MetaMask", e)
+                Log.e("MetaMask", "Gagal membuka MetaMask", e)
+                // Jika MetaMask tidak terpasang, arahkan ke halaman unduhan
                 val installIntent = Intent(Intent.ACTION_VIEW,
                     Uri.parse("https://metamask.io/download.html")).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -58,6 +62,7 @@ class MetaMaskWebViewClient : WebViewClient() {
     }
 }
 
+// Fungsi untuk memeriksa apakah MetaMask terpasang
 fun isMetaMaskInstalled(context: Context): Boolean {
     val pm = context.packageManager
     return try {
@@ -69,14 +74,14 @@ fun isMetaMaskInstalled(context: Context): Boolean {
 }
 
 @Composable
-fun ConnectMetaScreen(navController: NavController) {
+fun ConnectMetaScreen(navController: NavController, eventSink: (EventSinkMetaMask) -> Unit) {
     var isWalletConnected by remember { mutableStateOf(false) }
     var walletAddress by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(false) }
     val context = LocalContext.current
     var webView by remember { mutableStateOf<WebView?>(null) }
 
-    // Timeout handling
+    // Timeout handling jika koneksi gagal
     LaunchedEffect(loading) {
         if (loading) {
             delay(10000) // 10 detik timeout
@@ -89,7 +94,7 @@ fun ConnectMetaScreen(navController: NavController) {
                     }
                     context.startActivity(intent)
                 } catch (e: Exception) {
-                    Log.e("MetaMask", "Fallback failed", e)
+                    Log.e("MetaMask", "Fallback gagal", e)
                     // Jika MetaMask tidak terpasang, arahkan ke halaman unduhan
                     val installIntent = Intent(Intent.ACTION_VIEW,
                         Uri.parse("https://metamask.io/download.html")).apply {
@@ -101,6 +106,7 @@ fun ConnectMetaScreen(navController: NavController) {
         }
     }
 
+    // Menyiapkan WebView untuk berinteraksi dengan MetaMask
     AndroidView(
         factory = { context ->
             WebView(context).apply {
@@ -118,15 +124,32 @@ fun ConnectMetaScreen(navController: NavController) {
                         walletAddress = address
                         isWalletConnected = true
                         loading = false
+                        eventSink(EventSinkMetaMask.WalletConnected) // Memicu event WalletConnected
                     }
 
                     @JavascriptInterface
                     fun connectionFailed() {
                         loading = false
+                        eventSink(EventSinkMetaMask.ConnectionFailed) // Memicu event ConnectionFailed
                     }
                 }, "Android")
 
-                loadUrl("file:///android_asset/web3page.html")
+                // Menjalankan JavaScript untuk meminta akses MetaMask
+                evaluateJavascript(""" 
+                    if (typeof window.ethereum !== 'undefined') {
+                        ethereum.request({ method: 'eth_requestAccounts' })
+                            .then(accounts => {
+                                let walletAddress = accounts[0];
+                                window.Android.sendWalletAddress(walletAddress); // Kirim ke Android
+                            })
+                            .catch(error => {
+                                console.error("Error connecting to MetaMask:", error);
+                                window.Android.connectionFailed();  // Jika gagal
+                            });
+                    } else {
+                        window.Android.connectionFailed();  // Jika MetaMask tidak terpasang
+                    }
+                """, null)
             }
         },
         modifier = Modifier.fillMaxSize()
@@ -168,20 +191,12 @@ fun ConnectMetaScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Tombol untuk koneksi dompet
                 Button(
                     onClick = {
                         if (!loading) {
                             loading = true
-                            webView?.post {
-                                webView?.evaluateJavascript(""" 
-                                    if (typeof connectMetaMask === 'function') {
-                                        connectMetaMask();
-                                    } else {
-                                        console.error('connectMetaMask not found');
-                                        window.Android.connectionFailed();
-                                    }
-                                """.trimIndent(), null)
-                            }
+                            eventSink(EventSinkMetaMask.Connect) // Trigger Connect Event
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
@@ -203,6 +218,7 @@ fun ConnectMetaScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text("or", fontSize = 14.sp, color = Color.Gray)
 
+                // Tombol untuk melanjutkan sebagai tamu
                 TextButton(onClick = {
                     navController.navigate("main") {
                         popUpTo("connectMeta") { inclusive = true }
@@ -210,13 +226,14 @@ fun ConnectMetaScreen(navController: NavController) {
                     }
                 }) {
                     Text(
-                        "As a Guest",
+                        "Sebagai Tamu",
                         fontSize = 14.sp,
                         color = Color(0xFF2E7D32),
                         textDecoration = TextDecoration.Underline
                     )
                 }
 
+                // Redirect ke halaman registrasi setelah wallet terhubung
                 if (isWalletConnected && walletAddress != null) {
                     LaunchedEffect(walletAddress) {
                         navController.navigate("register/${walletAddress}")

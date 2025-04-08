@@ -30,6 +30,11 @@
             font-weight: bold;
             color: #2e7d32;
         }
+        #errorMessage {
+            margin-top: 20px;
+            font-size: 14px;
+            color: red;
+        }
     </style>
 </head>
 <body>
@@ -39,13 +44,14 @@
 <button id="connectButton">Connect MetaMask</button>
 
 <p id="walletAddress"></p>
+<p id="errorMessage"></p>
 
 <script>
     // Check if MetaMask is installed
     if (typeof window.ethereum !== 'undefined') {
         console.log('MetaMask is installed!');
     } else {
-        alert('Please install MetaMask to use this feature');
+        document.getElementById('errorMessage').innerText = 'Please install MetaMask to use this feature.';
     }
 
     // Define the connectMetaMask function
@@ -70,10 +76,10 @@
                 }
             } catch (error) {
                 console.error('Error connecting to MetaMask:', error);
-                alert('Failed to connect to MetaMask. Please try again.');
+                document.getElementById('errorMessage').innerText = 'Failed to connect to MetaMask. Please try again.';
             }
         } else {
-            alert('MetaMask is not installed. Please install it first.');
+            document.getElementById('errorMessage').innerText = 'MetaMask is not installed. Please install it first.';
         }
     }
 

@@ -22,6 +22,7 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import com.example.compose_ta09.ui.theme.COMPOSE_TA09Theme
+import com.example.compose_ta09.ui.viewModels.EventSinkMetaMask
 import com.example.compose_ta09.services.SharedPreferencesManager
 
 class MainActivity : ComponentActivity() {
@@ -51,8 +52,74 @@ fun MyApp() {
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = if (isLoggedIn.value) "main" else "connectMeta") {
-        composable("connectMeta") { ConnectMetaScreen(navController) }
-        composable("main") { MainScreen(navController, jwtToken) } // Pass jwtToken to MainScreen
+        composable("connectMeta") {
+            ConnectMetaScreen(
+                navController = navController,
+                eventSink = { event ->
+                    // Tangani event terkait koneksi MetaMask di ConnectMetaScreen
+                    when (event) {
+                        is EventSinkMetaMask.Connect -> {
+                            // Handle connect logic
+                        }
+                        is EventSinkMetaMask.Disconnect -> {
+                            // Handle disconnect logic
+                        }
+                        is EventSinkMetaMask.WalletConnected -> {
+                            // Handle wallet connected logic
+                        }
+                        is EventSinkMetaMask.ConnectionFailed -> {
+                            // Handle connection failed logic
+                        }
+                    }
+                }
+            )
+        }
+        composable("main") {
+            MainScreen(
+                navController = navController,
+                jwtToken = jwtToken,
+                eventSink = { event ->
+                    // Tangani event terkait koneksi MetaMask di MainScreen
+                    when (event) {
+                        is EventSinkMetaMask.Connect -> {
+                            // Handle connect logic
+                        }
+                        is EventSinkMetaMask.Disconnect -> {
+                            // Handle disconnect logic
+                        }
+                        is EventSinkMetaMask.WalletConnected -> {
+                            // Handle wallet connected logic
+                        }
+                        is EventSinkMetaMask.ConnectionFailed -> {
+                            // Handle connection failed logic
+                        }
+                    }
+                }
+            )
+        }
+        composable("profile") {
+            ProfileScreen(
+                navController = navController,
+                jwtToken = jwtToken,
+                eventSink = { event ->
+                    // Tangani event terkait koneksi MetaMask di ProfileScreen
+                    when (event) {
+                        is EventSinkMetaMask.Connect -> {
+                            // Handle connect logic
+                        }
+                        is EventSinkMetaMask.Disconnect -> {
+                            // Handle disconnect logic
+                        }
+                        is EventSinkMetaMask.WalletConnected -> {
+                            // Handle wallet connected logic
+                        }
+                        is EventSinkMetaMask.ConnectionFailed -> {
+                            // Handle connection failed logic
+                        }
+                    }
+                }
+            )
+        }
         composable("register/{walletAddress}") { backStackEntry ->
             val walletAddress = backStackEntry.arguments?.getString("walletAddress")
             RegisterScreen(navController, walletAddress) // Pass walletAddress to RegisterScreen
@@ -61,13 +128,13 @@ fun MyApp() {
             val walletAddress = backStackEntry.arguments?.getString("walletAddress")
             LoginScreen(navController, walletAddress) // Pass walletAddress to LoginScreen
         }
-        composable("profile") { ProfileScreen(navController, jwtToken) } // Pass jwtToken to ProfileScreen
+
         composable("tambah") { TambahScreenContent(navController) }
     }
 }
 
 @Composable
-fun MainScreen(navController: NavHostController, jwtToken: String?) { // Menerima jwtToken
+fun MainScreen(navController: NavHostController, jwtToken: String?, eventSink: (EventSinkMetaMask) -> Unit) {
     val bottomNavController = rememberNavController()
 
     Scaffold(
@@ -84,7 +151,13 @@ fun MainScreen(navController: NavHostController, jwtToken: String?) { // Menerim
             NavHost(navController = bottomNavController, startDestination = "home") {
                 composable("home") { HomeScreen(bottomNavController, jwtToken) } // Pass jwtToken
                 composable("tambah") { TambahScreenContent(bottomNavController) }
-                composable("profile") { ProfileScreen(navController, jwtToken) } // Pass jwtToken
+                composable("profile") {
+                    ProfileScreen(
+                        navController = navController,
+                        jwtToken = jwtToken,
+                        eventSink = eventSink  // Tambahkan parameter eventSink
+                    )
+                } // Pass jwtToken
             }
         }
     }
