@@ -113,7 +113,6 @@ fun ProfileScreen(navController: NavController, jwtToken: String?, eventSink: (E
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text("Nama: ${it.fullName}", fontSize = 18.sp, modifier = Modifier.padding(8.dp))
-                Text("Role: ${it.role}", fontSize = 18.sp, modifier = Modifier.padding(8.dp))
                 Text("Wallet Address: ${it.walletAddress}", fontSize = 18.sp, modifier = Modifier.padding(8.dp))
 
                 Spacer(modifier = Modifier.height(16.dp))

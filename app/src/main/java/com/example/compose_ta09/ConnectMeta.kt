@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.compose.ui.viewinterop.AndroidView
+import com.example.compose_ta09.helper.OnEvent
 import com.example.compose_ta09.ui.viewModels.EventSinkMetaMask
 import kotlinx.coroutines.delay
 
@@ -62,23 +63,12 @@ class MetaMaskWebViewClient : WebViewClient() {
     }
 }
 
-// Fungsi untuk memeriksa apakah MetaMask terpasang
-fun isMetaMaskInstalled(context: Context): Boolean {
-    val pm = context.packageManager
-    return try {
-        pm.getPackageInfo("io.metamask", 0)
-        true
-    } catch (e: Exception) {
-        false
-    }
-}
-
 @Composable
 fun ConnectMetaScreen(navController: NavController, eventSink: (EventSinkMetaMask) -> Unit) {
     var isWalletConnected by remember { mutableStateOf(false) }
     var walletAddress by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(false) }
-    var showConfirmationDialog by remember { mutableStateOf(false) } // Menambahkan deklarasi variabel ini
+    var showConfirmationDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     // Timeout handling jika koneksi gagal
@@ -87,7 +77,6 @@ fun ConnectMetaScreen(navController: NavController, eventSink: (EventSinkMetaMas
             delay(10000) // Timeout 10 detik
             if (loading) {
                 loading = false
-                // Fallback untuk membuka MetaMask jika timeout
                 try {
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse("metamask://browser")).apply {
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -120,13 +109,13 @@ fun ConnectMetaScreen(navController: NavController, eventSink: (EventSinkMetaMas
                         walletAddress = address
                         isWalletConnected = true
                         loading = false
-                        eventSink(EventSinkMetaMask.WalletConnected)
+                        eventSink(EventSinkMetaMask.SendWalletAddress(address)) // Menggunakan event sink untuk mengirim wallet address
                     }
 
                     @JavascriptInterface
                     fun connectionFailed() {
                         loading = false
-                        eventSink(EventSinkMetaMask.ConnectionFailed)
+                        eventSink(EventSinkMetaMask.ConnectionFailed) // Menggunakan event sink untuk menangani koneksi gagal
                     }
                 }, "Android")
 
@@ -151,11 +140,20 @@ fun ConnectMetaScreen(navController: NavController, eventSink: (EventSinkMetaMas
         modifier = Modifier.fillMaxSize()
     )
 
-    // Mengarahkan pengguna ke halaman registrasi setelah wallet terhubung
-    LaunchedEffect(isWalletConnected, walletAddress) {
-        if (isWalletConnected && walletAddress != null) {
-            // Navigasi ke halaman registrasi setelah wallet berhasil terhubung
-            navController.navigate("register/${walletAddress}")
+    // Menggunakan OnEvent untuk menangani event
+    val uiEvent = remember { mutableStateOf<EventSinkMetaMask?>(null) }
+    OnEvent(events = uiEvent.value ?: flowOf()) { event ->
+        when (event) {
+            EventSinkMetaMask.WalletConnected -> {
+                isWalletConnected = true
+                walletAddress?.let {
+                    navController.navigate("register/${it}")
+                }
+            }
+            EventSinkMetaMask.ConnectionFailed -> {
+                Log.e("ConnectMetaScreen", "Koneksi MetaMask gagal")
+                showMessage("Koneksi gagal! Pastikan MetaMask terpasang.")
+            }
         }
     }
 
@@ -195,10 +193,8 @@ fun ConnectMetaScreen(navController: NavController, eventSink: (EventSinkMetaMas
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Tombol untuk koneksi dompet
                 Button(
                     onClick = {
-                        // Tampilkan dialog konfirmasi
                         showConfirmationDialog = true
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
@@ -207,10 +203,7 @@ fun ConnectMetaScreen(navController: NavController, eventSink: (EventSinkMetaMas
                 ) {
                     if (loading) {
                         Box(modifier = Modifier.size(20.dp)) {
-                            CircularProgressIndicator(
-                                color = Color.White,
-                                strokeWidth = 2.dp
-                            )
+                            CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
                         }
                     } else {
                         Text("Connect Wallet", fontSize = 14.sp, color = Color.White)
@@ -220,7 +213,6 @@ fun ConnectMetaScreen(navController: NavController, eventSink: (EventSinkMetaMas
                 Spacer(modifier = Modifier.height(4.dp))
                 Text("or", fontSize = 14.sp, color = Color.Gray)
 
-                // Tombol untuk melanjutkan sebagai tamu
                 TextButton(onClick = {
                     navController.navigate("main") {
                         popUpTo("connectMeta") { inclusive = true }
@@ -238,7 +230,6 @@ fun ConnectMetaScreen(navController: NavController, eventSink: (EventSinkMetaMas
         }
     }
 
-    // Dialog Konfirmasi jika showConfirmationDialog bernilai true
     if (showConfirmationDialog) {
         AlertDialog(
             onDismissRequest = { showConfirmationDialog = false },
@@ -248,7 +239,6 @@ fun ConnectMetaScreen(navController: NavController, eventSink: (EventSinkMetaMas
                 TextButton(
                     onClick = {
                         showConfirmationDialog = false
-                        // Trigger connect wallet event
                         if (!loading) {
                             loading = true
                             eventSink(EventSinkMetaMask.Connect) // Trigger Connect Event

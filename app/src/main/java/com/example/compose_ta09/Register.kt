@@ -58,7 +58,6 @@ fun RegisterScreen(navController: NavController, walletAddress: String?) {
         val registerRequest = RegisterRequest(
             fullName = fullName,
             password = password,
-            role = "Pengguna", // Anda bisa memilih role sesuai kebutuhan
             walletAddress = walletAddress // Wallet Address di sini tidak null
         )
 

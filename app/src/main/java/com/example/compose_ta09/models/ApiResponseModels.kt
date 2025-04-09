@@ -17,7 +17,6 @@ data class LoginResponse(
 data class RegisterRequest(
     val fullName: String,
     val password: String,
-    val role: String,
     val walletAddress: String // Menambahkan wallet address untuk registrasi
 )
 
@@ -32,7 +31,6 @@ data class RegisterResponse(
 data class UserDataResponse(
     val fullName: String, // Nama lengkap pengguna
     val walletAddress: String, // Alamat wallet pengguna
-    val role: String, // Role pengguna (Pengguna/Validator)
     val isLoggedIn: Boolean // Status login pengguna
 )
 
